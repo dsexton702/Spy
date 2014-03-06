@@ -1,0 +1,23 @@
+{
+  "uuid": "313c456e-0005-4b84-be4e-c6f563fcd8d8",
+  "shortName": "SPY",
+  "longName": "SPY",
+  "companyName": "TeamAcid",
+  "versionCode": 8,
+  "versionLabel": "2.3.0",
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [{
+	
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon.png",
+	"menuIcon": true
+      }]
+  }
+}
