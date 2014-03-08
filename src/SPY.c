@@ -195,7 +195,7 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
      register Tuplet symbol_tups = TupletInteger(SPY_KEY_START, sign);
      register Tuplet symbol_tupz = TupletInteger(SPY_KEY_START, signs);
      register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
-	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs;
+	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
   switch (cell_index->row) {
 
 case 0:
