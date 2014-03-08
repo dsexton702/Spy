@@ -95,6 +95,11 @@ case 4:
 case 5:
                   menu_cell_basic_draw(ctx, cell_layer, "Video Camera", NULL, NULL);
           break;
+		  
+		  case 6:
+                  menu_cell_basic_draw(ctx, cell_layer, "Front Video Cam", NULL, NULL);
+          break;
+      
       }
      
   }
@@ -180,6 +185,7 @@ int symbolz = 3;
 int sign = 4;
 int signs = 5;
 int signz = 6;
+int sigs = 7;
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
 
@@ -189,6 +195,7 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
      register Tuplet symbol_tups = TupletInteger(SPY_KEY_START, sign);
      register Tuplet symbol_tupz = TupletInteger(SPY_KEY_START, signs);
      register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
+	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs;
   switch (cell_index->row) {
 
 case 0:
@@ -245,6 +252,13 @@ case 5:
 
   sendMes(symbol_tuple);
       break;
+	  
+	  case 6:
+
+
+  sendMes(symbol_tup);
+      break;
+
 
   }
 
