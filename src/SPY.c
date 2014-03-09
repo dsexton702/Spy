@@ -3,7 +3,7 @@
 
 
 
-#define NUM_FIRST_MENU_ITEMS 6
+#define NUM_FIRST_MENU_ITEMS 7
 #define NUM_MENU_SECTIONS 1
 
 static Window *window;
@@ -124,8 +124,7 @@ app_message_outbox_begin(&iter);
 
 static void timer_mods(){
 app_timer_cancel(timerz);
-	Layer *law = text_layer_get_layer(text_layer);
- layer_destroy(law);
+ layer_destroy(text_layer_get_layer(text_layer));
 
 app_timer_cancel(timer);
 
@@ -178,7 +177,8 @@ window_sets(window, man);
 
 }
 
-
+static bool audi = false;
+static bool flash = false;
 int symbol = 1;
 int symbols = 2;
 int symbolz = 3;
@@ -229,6 +229,32 @@ break;
 
 
 sendMes(symbol_tups);
+    if(audi == false){
+      audi = true;
+    window_layers = window_get_root_layer(window);
+  GRect bounde = layer_get_bounds(window_layers);
+ text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
+  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, "Recording Started...");
+  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+      
+    }else
+      if(audi == true){
+      layer_destroy(text_layer_get_layer(text_layer));
+
+      audi = false;
+      window_layers = window_get_root_layer(window);
+  GRect bounde = layer_get_bounds(window_layers);
+ text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
+  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, "Recording stopped");
+  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+            timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+    
+    
+    }
 
       break;
 case 3:
@@ -246,6 +272,29 @@ timer = app_timer_register(1000 /* milliseconds */, timer_mods, NULL);
       break;
 case 4:
   sendMes(symbol_tupz);
+    if(flash == false){
+    flash = true;
+    window_layers = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layers);
+ text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
+  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, "Flashlight on");
+  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+  }else
+    if(flash == true){
+layer_destroy(text_layer_get_layer(text_layer));
+      flash = false;
+    window_layers = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layers);
+ text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
+  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, "Flashlight off");
+  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+      timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+
+  }
       break;
 case 5:
 
