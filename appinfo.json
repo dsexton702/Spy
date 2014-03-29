@@ -1,11 +1,11 @@
 {
-    "versionLabel": "2.4.0",
+    "versionLabel": "2.9.0",
     "uuid": "313c456e-0005-4b84-be4e-c6f563fcd8d8",
     "appKeys": {
         "dummy": 0
     },
     "longName": "Spy",
-    "versionCode": 9,
+    "versionCode": 14,
     "capabilities": [
         ""
     ],
