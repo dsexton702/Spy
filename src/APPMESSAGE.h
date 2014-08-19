@@ -9,19 +9,18 @@ enum {
   TODO_KEY_FETCH,
 };
 static BitmapLayer *image_layer;
-
-static GBitmap *image;
+static uint8_t datar;
 static TextLayer *text_layer;
 DictionaryIterator *iter;
-Tuple *text_tuple;
-char text_buffer[250];
+
+char text_buffer[1024];
 static int se = 0;
 Tuple *start_tuple;
   Tuple *stop_tuple;
 
 
 
-
+void createImg(const uint8_t data);
 
  void timer_callback(void *data);
 
