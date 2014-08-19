@@ -195,7 +195,7 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
      register Tuplet symbol_tups = TupletInteger(SPY_KEY_START, sign);
      register Tuplet symbol_tupz = TupletInteger(SPY_KEY_START, signs);
      register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
-	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
+	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);d
   switch (cell_index->row) {
 
 case 0:
@@ -240,7 +240,7 @@ window_layers = window_get_root_layer(window);
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
 text_layer_set_text(text_layer, "Loading Voice Rec");
   layer_add_child(window_layers, text_layer_get_layer(text_layer));
-timer = app_timer_register(1000 /* milliseconds */, timer_mods, NULL);
+
 
 
       break;

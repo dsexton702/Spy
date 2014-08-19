@@ -12,7 +12,12 @@
 
 
  void in_received_handler(DictionaryIterator *received, void *context) {
- 
+  Tuple *start_tuple = dict_find(iter, SPY_KEY_START);
+   
+
+
+  if (start_tuple) {
+    text_layer_set_text(text_layer, append_tuple->value->cstring);
 
   }
 
