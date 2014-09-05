@@ -1,27 +1,63 @@
 {
-    "versionLabel": "2.9.0",
-    "uuid": "313c456e-0005-4b84-be4e-c6f563fcd8d8",
     "appKeys": {
         "dummy": 0
     },
-    "longName": "Spy",
-    "versionCode": 14,
     "capabilities": [
         ""
     ],
-    "shortName": "Spy",
     "companyName": "TeamAcid",
-    "watchapp": {
-        "watchface": false
-    },
+    "longName": "Spy",
+    "projectType": "native",
     "resources": {
         "media": [
             {
+                "file": "images/back.png",
+                "name": "back",
+                "type": "png"
+            },
+            {
+                "file": "images/flash off.png",
+                "name": "flashoff",
+                "type": "png"
+            },
+            {
+                "file": "images/flash on.png",
+                "name": "flashon",
+                "type": "png"
+            },
+            {
+                "file": "images/play.png",
+                "name": "play",
+                "type": "png"
+            },
+            {
+                "file": "images/pause.png",
+                "name": "pause",
+                "type": "png"
+            },
+            {
+                "file": "images/stop.png",
+                "name": "stop",
+                "type": "png"
+            },
+            {
+                "file": "images/record.png",
+                "name": "record",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_icon.png",
                 "menuIcon": true,
-                "type": "png",
                 "name": "IMAGE_MENU_ICON",
-                "file": "images/menu_icon.png"
+                "type": "png"
             }
         ]
+    },
+    "shortName": "Spy",
+    "uuid": "313c456e-0005-4b84-be4e-c6f563fcd8d8",
+    "versionCode": 15,
+    "versionLabel": "3.3",
+    "watchapp": {
+        "watchface": false
     }
 }

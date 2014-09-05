@@ -3,23 +3,38 @@
 
 
 
-#define NUM_FIRST_MENU_ITEMS 8
-#define NUM_MENU_SECTIONS 1
+
 static AppSync sync;
 static Window *window;
+static Window *windows;
+bool record = false;
 static AppTimer *timerz;
 static Layer *layer;
 static AppTimer *timers;
 static AppTimer *timer;
 Layer *window_layers;
 static GBitmap *image;
+static GBitmap *images;
+static GBitmap *imagez;
+bool play = false;
+static int transNum;
+
+
+char *pee = "Recording...";
+char *peep = "";
 Layer *window_layer;
 static AppSync sync;
+ActionBarLayer *action_bar;
+
+static char *text = "Security off";
+
 static uint8_t sync_buffer[1024];
 static TextLayer *text_layer;
 // This is a menu layer
 // You have more control than with a simple menu layer
 static MenuLayer *menu_layer;
+
+static MenuLayer *menu_layers;
 
 // Menu items can optionally have an icon drawn with them
 
@@ -50,6 +65,168 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
   
 }
 
+static uint16_t menu_get_num_rows_callbacks(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+ 
+      return 2;
+
+    
+  
+  
+}
+
+void sendMes(Tuplet tup){
+app_message_outbox_begin(&iter);
+
+
+  dict_write_tuplet(iter, &tup);
+  dict_write_end(iter);
+
+  app_message_outbox_send();
+
+}
+
+
+  
+ static void timer_modss(){
+   if(record == false){
+  text_layer_set_text(text_layer, pee);
+     record = true;
+
+   }else
+     if(record == true){
+  text_layer_set_text(text_layer, peep);     
+     
+          record = false;
+
+
+   }
+               timer = app_timer_register(1500 /* milliseconds */, timer_modss, NULL);
+
+ }
+  
+static void timer_mods(){
+app_timer_cancel(timerz);
+ layer_destroy(text_layer_get_layer(text_layer));
+
+app_timer_cancel(timer);
+
+
+
+}
+
+
+static void my_previous_click_handler(ClickRecognizerRef recognizer, void *context) {
+      register int sgiiz = 11;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);
+}
+
+
+
+
+
+
+static void my_next_click_handler(ClickRecognizerRef recognizer, void *context) {
+ 
+         register int sgiiz = 11;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);
+     
+  
+
+
+}
+
+
+static void my_select_click_handler(ClickRecognizerRef recognizer, void *context) {
+ 
+ register int sgiiz = 12;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);  
+
+   Window *window = (Window *)context;
+
+
+}
+
+
+
+static void my_previous_click_handlers(ClickRecognizerRef recognizer, void *context) {
+      register int sgiiz = 5;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);
+}
+
+
+
+
+
+
+static void my_next_click_handlers(ClickRecognizerRef recognizer, void *context) {
+ 
+         register int sgiiz = 5;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);
+     
+  
+
+
+}
+
+
+static void my_select_click_handlers(ClickRecognizerRef recognizer, void *context) {
+ 
+      
+ register int sgiiz = 12;
+
+  
+     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
+    sendMes(symbol_tuple);  
+ Window *window = (Window *)context;
+
+}
+
+
+
+
+
+void click_config_provider(void *context) {
+  window_single_click_subscribe(BUTTON_ID_DOWN, (ClickHandler) my_next_click_handler);
+    //  window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handler);
+
+  window_single_click_subscribe(BUTTON_ID_UP, (ClickHandler) my_previous_click_handler);
+}
+
+
+void click_config_providers(void *context) {
+  window_single_click_subscribe(BUTTON_ID_DOWN, (ClickHandler) my_next_click_handlers);
+  
+   // window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handlers);
+
+  window_single_click_subscribe(BUTTON_ID_UP, (ClickHandler) my_previous_click_handlers);
+}
+
+static void timer_mod(){
+  
+
+text_layer_set_text(text_layer, "Picture Taken");
+
+
+
+timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+
+}
+
 
 static void sync_error_callback(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
@@ -61,11 +238,69 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
      
     // createImg(datar = new_tuple->value->uint32);
       text_layer_set_text(text_layer, new_tuple->value->cstring);
+    
+     char strinCheck[124] = "Picture Taken";
+    char strinChecks[124] = "Recording Started";
+    char strinCheckz[124] = "Recording has Stopped";
+    char strinCheckks[124] = "Audio Recording";
+    char strinCheckkerz[124] = "Flashlight On";
+    char strinCheckkerrz[124] = "Flashlight Off";
+    char strinCheckkeerz[124] = "Audio is Stopping";
+    char strinCheckkeerrz[124] = "action";
+    char strinCheckkers[124] = "Audio is Stopping";
+
+   if(strcmp(new_tuple->value->cstring, strinCheck) == 0){
+      
+      
+   }else
+ if(strcmp(new_tuple->value->cstring, strinChecks) == 0){   
+     
+   }else
+ if(strcmp(new_tuple->value->cstring, strinCheckz) == 0){
+     
+   }else
+ if(strcmp(new_tuple->value->cstring, strinCheckks) == 0){   
+      action_bar = action_bar_layer_create();
+                  image = gbitmap_create_with_resource(RESOURCE_ID_stop);
+                      images = gbitmap_create_with_resource(RESOURCE_ID_play);
+                           //     imagez = gbitmap_create_with_resource(RESOURCE_ID_back);
+
+
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, image);
+           //   action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, imagez);
+
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, images);
+    
+    action_bar_layer_add_to_window(action_bar, window);
+  // Set the click config provider:
+  action_bar_layer_set_click_config_provider(action_bar,
+                                             click_config_provider);
+   }else
+ if(strcmp(new_tuple->value->cstring, strinCheckkerz) == 0){ 
+        action_bar = action_bar_layer_create();
+                  image = gbitmap_create_with_resource(RESOURCE_ID_flashoff);
+                      images = gbitmap_create_with_resource(RESOURCE_ID_flashon);
+     
+                     //      imagez = gbitmap_create_with_resource(RESOURCE_ID_back);
+
+
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, image);
+         //action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, imagez);
+
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, images);
+    
+    action_bar_layer_add_to_window(action_bar, window);
+  // Set the click config provider:
+  action_bar_layer_set_click_config_provider(action_bar,
+                                             click_config_providers);
+     
+   }else
+ if(strcmp(new_tuple->value->cstring, strinCheckkeerrz) == 0){ 
+   
+   }
       break;
   }
 }
-
-
 
 
 
@@ -88,6 +323,10 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 
    
 }
+
+
+
+
 
 // This is the menu item draw callback where you specify what each item should look like
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
@@ -126,6 +365,12 @@ case 5:
          case 7:
                   menu_cell_basic_draw(ctx, cell_layer, "Silence Phone", NULL, NULL);
           break;
+           case 8:
+                  menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
+          break;
+    //    case 9:
+    //              menu_cell_basic_draw(ctx, cell_layer, "Security off", NULL, NULL);
+    //      break;
       
       }
      
@@ -135,16 +380,6 @@ case 5:
 
 
 
-void sendMes(Tuplet tup){
-app_message_outbox_begin(&iter);
-
-
-  dict_write_tuplet(iter, &tup);
-  dict_write_end(iter);
-
-  app_message_outbox_send();
-
-}
 
 
 
@@ -161,64 +396,30 @@ static void timer_modze(){
    createImg(datar);
 }
 
-static void timer_mods(){
-app_timer_cancel(timerz);
- layer_destroy(text_layer_get_layer(text_layer));
-
-app_timer_cancel(timer);
 
 
 
+
+void addWindow(char* x, int y, int z, void (*f)()){
+   window_layers = window_get_root_layer(window);
+ GRect bounds = layer_get_bounds(window_layers);
+ text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
+ text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, x);
+  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+  if(z == 1){
+timerz = app_timer_register(y /* milliseconds */, f, NULL);
+  }
 }
 
-static void timer_mod(){
-  
 
-text_layer_set_text(text_layer, "Picture Taken");
-
-
-
-timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
-
-}
-
-void window_sets(Window *window, MenuLayerCallbacks men) {
-Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_frame(window_layer);
-
-    
-
-  // Create the menu layer
-  menu_layer = menu_layer_create(bounds);
-
- 
-  // Set all the callbacks for the menu layer
-  menu_layer_set_callbacks(menu_layer, NULL, men);
-
-  // Bind the menu layer's click config provider to the window for interactivity
-  menu_layer_set_click_config_onto_window(menu_layer, window);
-
-  // Add it to the window for display
-  layer_add_child(window_layer, menu_layer_get_layer(menu_layer));
-
-}
-
-void changeWindow(Window *window, MenuLayerCallbacks man){
-window = window_create();
-
-
-window_sets(window, man);
-
-
-
-
-
-  window_stack_push(window, true /* Animated */);
-
-}
 
 static bool audi = false;
 static bool flash = false;
+
+
+
 
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
@@ -235,90 +436,55 @@ register int signs = 5;
 register int signz = 6;
 register int sigs = 7;
 register int sgis = 8;
-  
-     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, symbol);
-     register Tuplet symbol_tuples = TupletInteger(SPY_KEY_START, symbols);
-     register Tuplet symbol_tuplez = TupletInteger(SPY_KEY_START, symbolz);
-     register Tuplet symbol_tups = TupletInteger(SPY_KEY_START, sign);
-     register Tuplet symbol_tupz = TupletInteger(SPY_KEY_START, signs);
-     register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
-<<<<<<< HEAD
-	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);d
-=======
-	  register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
-  	 register Tuplet symbol_tuppz = TupletInteger(SPY_KEY_START, sgis);
+register int sgiz = 9;
+register int sgiiz = 10;
 
->>>>>>> origin/master
+register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, symbol);
+register Tuplet symbol_tuples = TupletInteger(SPY_KEY_START, symbols);
+register Tuplet symbol_tuplez = TupletInteger(SPY_KEY_START, symbolz);
+register Tuplet symbol_tups = TupletInteger(SPY_KEY_START, sign);
+register Tuplet symbol_tupz = TupletInteger(SPY_KEY_START, signs);
+register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
+register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
+register Tuplet symbol_tuppz = TupletInteger(SPY_KEY_START, sgis);
+register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
+register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
+
+
+
   switch (cell_index->row) {
 
 case 0:
 
-
 sendMes(symbol_tupez);
-  
- window_layers = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
- text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-text_layer_set_text(text_layer, "Loading Camera");
-  layer_add_child(window_layers, text_layer_get_layer(text_layer));
-timerz = app_timer_register(3500 /* milliseconds */, timer_mod, NULL);
+   
+   addWindow("Loading Camera", 3500, 1, timer_mod);
+    
+
+
 break;
 case 1:
 
 
 sendMes(symbol_tuplez);
-window_layers = window_get_root_layer(window);
-  GRect bound = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bound.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-text_layer_set_text(text_layer, "Loading Camera");
- layer_add_child(window_layers, text_layer_get_layer(text_layer));
-   timerz = app_timer_register(3500 /* milliseconds */, timer_mod, NULL);
-    // This is the menu item with the cycling icon
+addWindow("Loading Camera", 3500, 1, timer_mod);
 break;
     case 2:
 
 
 sendMes(symbol_tups);
-    if(audi == false){
-      audi = true;
-    window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-        layer_add_child(window_layers, text_layer_get_layer(text_layer));
+   
 
-    }else
-      if(audi == true){
-      layer_destroy(text_layer_get_layer(text_layer));
-
-      audi = false;
-      window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-        layer_add_child(window_layers, text_layer_get_layer(text_layer));
-
-        timer = app_timer_register(4000 /* milliseconds */, timer_mods, NULL);
+     
+addWindow(NULL, 0, 0, NULL);
+  
     
     
-    }
-
+    
       break;
 case 3:
 sendMes(symbol_tuples);
-window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-text_layer_set_text(text_layer, "Loading Voice Rec");
-  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+addWindow("Loading Voice Rec", 0, 0, NULL);
 
 
 
@@ -327,24 +493,12 @@ case 4:
   sendMes(symbol_tupz);
     if(flash == false){
     flash = true;
-    window_layers = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-  
-  layer_add_child(window_layers, text_layer_get_layer(text_layer));
+ addWindow(NULL, 0, 0, NULL);
   }else
     if(flash == true){
 layer_destroy(text_layer_get_layer(text_layer));
       flash = false;
-    window_layers = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-
-      timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+   addWindow(NULL, 0, 0, NULL);
 
   }
       break;
@@ -354,25 +508,14 @@ case 5:
   sendMes(symbol_tuple);
      if(audi == false){
       audi = true;
-    window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-       text_layer_set_text(text_layer, "Loading Recorder");
-layer_add_child(window_layers, text_layer_get_layer(text_layer));
+  addWindow("Loading Recorder", 0, 0, NULL);
       
     }else
       if(audi == true){
       layer_destroy(text_layer_get_layer(text_layer));
 
       audi = false;
-      window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-        timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+   addWindow(NULL, 1000, 1, timer_mods);
     
     
     }
@@ -386,13 +529,7 @@ layer_add_child(window_layers, text_layer_get_layer(text_layer));
   sendMes(symbol_tup);
      if(audi == false){
       audi = true;
-    window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-       text_layer_set_text(text_layer, "Loading Recorder");
-       layer_add_child(window_layers, text_layer_get_layer(text_layer));
+   addWindow("Loading Recorder", 0, 0, NULL);
 
       
     }else
@@ -400,12 +537,7 @@ layer_add_child(window_layers, text_layer_get_layer(text_layer));
       layer_destroy(text_layer_get_layer(text_layer));
 
       audi = false;
-      window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-        timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
+      addWindow(NULL, 1000, 1, timer_mods);
     
      }
     
@@ -415,36 +547,37 @@ layer_add_child(window_layers, text_layer_get_layer(text_layer));
      sendMes(symbol_tuppz);
      if(audi == false){
       audi = true;
-    window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-       
-layer_add_child(window_layers, text_layer_get_layer(text_layer));
-        timer = app_timer_register(2500 /* milliseconds */, timer_mods, NULL);
+   addWindow(NULL, 2500, 1, timer_mods);
       
     }else
       if(audi == true){
       
 
       audi = false;
-      window_layers = window_get_root_layer(window);
-  GRect bounde = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounde.size.w-0, 200 } });
-  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-       layer_add_child(window_layers, text_layer_get_layer(text_layer));
+       addWindow(NULL, 2500, 1, timer_mods);
 
-        timer = app_timer_register(2500 /* milliseconds */, timer_mods, NULL);
      }
     
     break;
 
+    case 8:
+  
+sendMes(symbol_tuzz);
 
+
+    break;
+    
+    case 9:
+  sendMes(symbol_tuz);
+
+
+
+    break;
   }
+ 
 
 }
+
 
 
 
@@ -490,41 +623,79 @@ void window_load(Window *window) {
   
 }
 
-static void layer_update_callback(Layer *me, GContext* ctx) {
-  
-   GRect bounds = layer_get_frame(me);
-   graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 0, 0 }, .size = bounds.size });
-
-  graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 100, 100 }, .size = bounds.size });
-}
  
 
-void createImg(uint8_t data){
- Layer *window_layerz = window_get_root_layer(window);
-   GRect bounds = layer_get_frame(window_layerz);
-      image = gbitmap_create_with_data(&data);
-
+void createImg(){
+ 
  
 
+img = (GBitmap) {
+        .addr = img_data,
+        .bounds = GRect(8, 20, 128, 128),
+        .row_size_bytes = 16,
+    };
 
+    bitmap_layer_set_bitmap(img_layer, &img);
+    bitmap_layer_set_alignment(img_layer, GAlignCenter);
+    layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(img_layer));
   
- image_layer = bitmap_layer_create(bounds);
-  bitmap_layer_set_bitmap(image_layer, image);
-  bitmap_layer_set_alignment(image_layer, GAlignCenter);
-    layer_set_update_proc(window_layerz, layer_update_callback);
-  layer_add_child(window_layerz, bitmap_layer_get_layer(image_layer));
-  
+
   
   
   
 }
+static int is = 0;
+
+
+
+ void in_received_handler(DictionaryIterator *received, void *context) {
+     count++;
+   
+
+    Tuple *tuple = dict_find(received, SPY_KEY_START);
+    Tuple *get_tuple = dict_find(received, SPY_KEY_STOP); //DictionaryIterator *iter;
+    Tuple *img_tuple = dict_find(received, IMG_KEY);
+    Tuple *row_tuple = dict_find(received, IMG_ROW);
+    if (img_tuple && row_tuple) {
+             size_t offset = is++ * 20;
+
+        memcpy(&img_data[(int)(row_tuple->value->cstring)], img_tuple->value->data, 16);
+      createImg();
+    }
+        
+    if(tuple){
+      
+       size_t offset = is++ * 20;
+      
+          APP_LOG(APP_LOG_LEVEL_DEBUG,"%d", offset);
+
+            memcpy(img_data + offset, tuple->value->data + 1, tuple->length - 1);
+
+   // APP_LOG(APP_LOG_LEVEL_DEBUG, "memcpy worked about to send!");
+      if(count < 144){
+     dict_write_int8(iter, SPY_KEY_STOP, 2);
+    app_message_outbox_send();
+      
+      }else
+        if(count >= 144){
+        layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(image_layer));
+
+                              layer_mark_dirty(bitmap_layer_get_layer(image_layer));
+    }
+      
+
+ 
+}
+
+
+ }
 
 void window_unload(Window *window) {
   // Destroy the menu layer
   
   app_sync_deinit(&sync); 
   menu_layer_destroy(menu_layer);
-app_timer_cancel(timerz);
+app_timer_cancel(timer);
   // Cleanup the menu icons
   
 }
@@ -532,11 +703,12 @@ app_timer_cancel(timerz);
 int main(void) {
   window = window_create();
   app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
+   app_message_register_inbox_received(in_received_handler);
+   app_message_register_inbox_dropped(in_dropped_handler);
+   app_message_register_outbox_sent(out_sent_handler);
   // Init buffers
   // Register message handlers
-//  app_message_register_inbox_received(in_received_handler);
-////   app_message_register_inbox_dropped(in_dropped_handler);
- //  app_message_register_outbox_sent(out_sent_handler);
+ 
  //  app_message_register_outbox_failed(out_failed_handler);
 
      app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
