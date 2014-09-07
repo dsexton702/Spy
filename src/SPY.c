@@ -16,15 +16,25 @@ Layer *window_layers;
 static GBitmap *image;
 static GBitmap *images;
 static GBitmap *imagez;
-bool play = false;
+static bool play = false;
 static int transNum;
+DictionaryIterator *outbox;
+static uint32_t chunk = 0;
+static Tuple *start_tuple;
+static Tuple *data_tuple;
+static Tuple *stop_tuple;
+
+static uint32_t length = 0;
+static uint8_t *data = NULL;
+static uint32_t *index = 0;
 
 
-char *pee = "Recording...";
-char *peep = "";
-Layer *window_layer;
+
+static char *pee = "Recording...";
+static char *peep = "";
+static Layer *window_layer;
 static AppSync sync;
-ActionBarLayer *action_bar;
+static ActionBarLayer *action_bar;
 
 static char *text = "Security off";
 
@@ -33,10 +43,13 @@ static TextLayer *text_layer;
 // This is a menu layer
 // You have more control than with a simple menu layer
 static MenuLayer *menu_layer;
-
+static BitmapLayer *image_layer;
 static MenuLayer *menu_layers;
 
 // Menu items can optionally have an icon drawn with them
+
+
+
 
 
 static int current_icon = 0;
@@ -77,7 +90,7 @@ static uint16_t menu_get_num_rows_callbacks(MenuLayer *menu_layer, uint16_t sect
 void sendMes(Tuplet tup){
 app_message_outbox_begin(&iter);
 
-
+  
   dict_write_tuplet(iter, &tup);
   dict_write_end(iter);
 
@@ -103,6 +116,28 @@ app_message_outbox_begin(&iter);
                timer = app_timer_register(1500 /* milliseconds */, timer_modss, NULL);
 
  }
+
+
+
+static void send_cmd(void) {
+ DictionaryIterator *iters;
+   uint32_t chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+
+  Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, 116);
+
+ if(iters == NULL){
+   return;
+ }
+  app_message_outbox_begin(&iters);
+    dict_write_tuplet(iters, &symbol_tuz);
+   dict_write_end(iters);
+  if((app_message_outbox_send() == APP_MSG_OK)) {
+    app_message_outbox_send();
+  }
+}
+
+
+
   
 static void timer_mods(){
 app_timer_cancel(timerz);
@@ -384,16 +419,14 @@ case 5:
 
 
 static void timer_modz(){
-Tuplet initial_values[] = {
-    TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
-  app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
-      sync_tuple_changed_callback, sync_error_callback, NULL);
+      send_cmd();
+
 
 
 }
 
 static void timer_modze(){
-   createImg(datar);
+  
 }
 
 
@@ -423,10 +456,12 @@ static bool flash = false;
 
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
-  Tuplet initial_values[] = {
+
+ /* Tuplet initial_values[] = {
     TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
-      sync_tuple_changed_callback, sync_error_callback, NULL);  
+      sync_tuple_changed_callback, sync_error_callback, NULL);
+      */
   
 register  int symbol = 1;
 register int symbols = 2;
@@ -439,6 +474,7 @@ register int sgis = 8;
 register int sgiz = 9;
 register int sgiiz = 10;
 
+
 register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, symbol);
 register Tuplet symbol_tuples = TupletInteger(SPY_KEY_START, symbols);
 register Tuplet symbol_tuplez = TupletInteger(SPY_KEY_START, symbolz);
@@ -448,7 +484,9 @@ register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
 register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
 register Tuplet symbol_tuppz = TupletInteger(SPY_KEY_START, sgis);
 register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
-register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
+
+
+
 
 
 
@@ -561,6 +599,11 @@ case 5:
     break;
 
     case 8:
+    
+
+addWindow(NULL, 0, 0, NULL);
+
+
   
 sendMes(symbol_tuzz);
 
@@ -568,7 +611,8 @@ sendMes(symbol_tuzz);
     break;
     
     case 9:
-  sendMes(symbol_tuz);
+ 
+//  sendMes(symbol_tuz);
 
 
 
@@ -625,67 +669,105 @@ void window_load(Window *window) {
 
  
 
-void createImg(){
+void createImg(uint8_t* i){
  
  
 
-img = (GBitmap) {
-        .addr = img_data,
+ // Wait till we are ready to try this out //
+
+*image = (GBitmap) {
+        .addr = i,
         .bounds = GRect(8, 20, 128, 128),
         .row_size_bytes = 16,
     };
+    
 
-    bitmap_layer_set_bitmap(img_layer, &img);
-    bitmap_layer_set_alignment(img_layer, GAlignCenter);
-    layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(img_layer));
+    bitmap_layer_set_bitmap(image_layer, image);
+    bitmap_layer_set_alignment(image_layer, GAlignCenter);
+    layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(image_layer));
   
 
   
   
   
 }
+
 static int is = 0;
+
 
 
 
  void in_received_handler(DictionaryIterator *received, void *context) {
      count++;
-   
 
+     APP_LOG(APP_LOG_LEVEL_DEBUG, "Message received from android ");
+
+   start_tuple = dict_find(received, IMG_START);
+      
+    
     Tuple *tuple = dict_find(received, SPY_KEY_START);
-    Tuple *get_tuple = dict_find(received, SPY_KEY_STOP); //DictionaryIterator *iter;
-    Tuple *img_tuple = dict_find(received, IMG_KEY);
-    Tuple *row_tuple = dict_find(received, IMG_ROW);
-    if (img_tuple && row_tuple) {
-             size_t offset = is++ * 20;
+    Tuple *get_tuple = dict_find(received, SPY_KEY_STOP); 
+    stop_tuple = dict_find(received, IMG_STOP);
+    data_tuple = dict_find(received, IMG_DATA);
+   
+    if (start_tuple) {
+              // timerz = app_timer_register(2500 /* milliseconds */, timer_modz, NULL);
 
-        memcpy(&img_data[(int)(row_tuple->value->cstring)], img_tuple->value->data, 16);
-      createImg();
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Start transmission. Size=%lu", start_tuple->value->uint32);
+      if (index != NULL) {
+        free(index);
+      }
+      index = malloc(start_tuple->value->uint32);
+      //if (index != NULL) {
+      length = start_tuple->value->uint32;   
+      send_cmd();
+        //index = 0;
+
+    //  }
+
+/*          DictionaryIterator *iters;
+
+  app_message_outbox_begin(&iters);
+
+ uint32_t chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+  dict_write_int(iters, SPY_KEY_START, &chunk_size, sizeof(uint32_t), false);
+  // Send the URL
+ dict_write_end(iters);
+  app_message_outbox_send();
+  */
     }
         
-    if(tuple){
+    if(data_tuple){
       
-       size_t offset = is++ * 20;
-      
-          APP_LOG(APP_LOG_LEVEL_DEBUG,"%d", offset);
-
-            memcpy(img_data + offset, tuple->value->data + 1, tuple->length - 1);
-
-   // APP_LOG(APP_LOG_LEVEL_DEBUG, "memcpy worked about to send!");
-      if(count < 144){
-     dict_write_int8(iter, SPY_KEY_STOP, 2);
-    app_message_outbox_send();
-      
-      }else
-        if(count >= 144){
-        layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(image_layer));
-
-                              layer_mark_dirty(bitmap_layer_get_layer(image_layer));
+       if (index + tuple->length <= length) {
+        memcpy(data + index, tuple->value->data, tuple->length);
+        index += tuple->length;
+      }
     }
+
+   
       
+     if(stop_tuple){
+        if (data && length > 0 && index > 0) {
+        Image *image = malloc(sizeof(Image));
+        GBitmap *bitmap = gbitmap_create_with_data(data);
+        if (image && bitmap) {
+          printf("Gbitmap=%p Gbitmap->addr=%p ctx->data=%p", bitmap, bitmap->addr, data);
+          image->bm = bitmap;
+          image->imgdata = data;
+        //  ctx->callback(image);
+          // We have transfered ownership of this memory to the app. Make sure we dont free it.
+          // (see netimage_destroy for cleanup)
+          createImg(image->imgdata);
+          data = NULL;
+          index = length = 0;
+        }
+     }
+     
+    }
 
  
-}
+
 
 
  }
@@ -694,6 +776,7 @@ void window_unload(Window *window) {
   // Destroy the menu layer
   
   app_sync_deinit(&sync); 
+    app_message_set_context(NULL);
   menu_layer_destroy(menu_layer);
 app_timer_cancel(timer);
   // Cleanup the menu icons
@@ -701,6 +784,8 @@ app_timer_cancel(timer);
 }
 
 int main(void) {
+
+  
   window = window_create();
   app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
    app_message_register_inbox_received(in_received_handler);
@@ -709,9 +794,11 @@ int main(void) {
   // Init buffers
   // Register message handlers
  
- //  app_message_register_outbox_failed(out_failed_handler);
+  app_message_register_outbox_failed(out_failed_handler);
+  
+     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
 
-     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+     app_message_open(256, 256);
 
 
   // Setup the window handlers

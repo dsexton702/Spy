@@ -8,44 +8,60 @@
 #define NUM_MENU_SECTIONS 1
 
 enum {
-  SPY_KEY_START,
+  SPY_KEY_START ,
   SPY_KEY_STOP,
-  IMG_KEY,
-  IMG_ROW,
-  TODO_KEY_FETCH,
+  IMG_START,
+  IMG_DATA,
+  IMG_STOP,
 };
+
+typedef struct{
+  GBitmap*  bm;
+  uint8_t*  imgdata;
+}Image;
+
+
+
+
+
+
+  
+
+
+
+
+
+
 static BitmapLayer *image_layer;
-static uint8_t datar;
 static TextLayer *text_layer;
 DictionaryIterator *iter;
 static int count = 0;
 char text_buffer[1024];
-    static BitmapLayer *img_layer;
-    static GBitmap img;
+
 static int se = 0;
-Tuple *start_tuple;
-static uint8_t img_data[20*144];
+static Tuple *start_tuple;
+static Tuple *data_tuple;
+static Tuple *stop_tuple;
 
-
-  Tuple *stop_tuple;
 
 
 
 void createImg();
 
 
- void timer_callback(void *data);
-
- void out_sent_handler(DictionaryIterator *sent, void *context);
+void timer_callback(void *data);
 
 
- void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context);
+void out_sent_handler(DictionaryIterator *sent, void *context);
 
 
- void in_received_handler(DictionaryIterator *received, void *context);
+void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context);
 
 
- void in_dropped_handler(AppMessageResult reason, void *context);
+void in_received_handler(DictionaryIterator *received, void *context);
+
+
+void in_dropped_handler(AppMessageResult reason, void *context);
 
 
 
