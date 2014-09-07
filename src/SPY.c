@@ -26,7 +26,7 @@ static Tuple *stop_tuple;
 
 static uint32_t length = 0;
 static uint8_t *data = NULL;
-static uint32_t *index = 0;
+static uint32_t index = 0;
 
 
 
@@ -714,16 +714,12 @@ static int is = 0;
               // timerz = app_timer_register(2500 /* milliseconds */, timer_modz, NULL);
 
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Start transmission. Size=%lu", start_tuple->value->uint32);
-      if (index != NULL) {
-        free(index);
-      }
-      index = malloc(start_tuple->value->uint32);
-      //if (index != NULL) {
+      data = malloc(start_tuple->value->uint32);
+      if(data != NULL){
       length = start_tuple->value->uint32;   
+      index = 0;
       send_cmd();
-        //index = 0;
-
-    //  }
+      }
 
 /*          DictionaryIterator *iters;
 
@@ -738,10 +734,11 @@ static int is = 0;
     }
         
     if(data_tuple){
-      
-       if (index + tuple->length <= length) {
-        memcpy(data + index, tuple->value->data, tuple->length);
-        index += tuple->length;
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "data sent. index=%lu, length=%d", index, data_tuple->length);
+
+       if (index + data_tuple->length <= length) {
+        memcpy(data + index, data_tuple->value->data, data_tuple->length);
+        index += data_tuple->length;
       }
     }
 
@@ -774,7 +771,10 @@ static int is = 0;
 
 void window_unload(Window *window) {
   // Destroy the menu layer
-  
+  if(data != NULL){
+  free(data);
+  }
+  app_message_deregister_callbacks();
   app_sync_deinit(&sync); 
     app_message_set_context(NULL);
   menu_layer_destroy(menu_layer);
@@ -808,7 +808,6 @@ int main(void) {
   });
 
   window_stack_push(window, true /* Animated */);
-
 
 
   app_event_loop();
