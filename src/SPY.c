@@ -23,6 +23,22 @@ static uint32_t chunk = 0;
 static Tuple *start_tuple;
 static Tuple *data_tuple;
 static Tuple *stop_tuple;
+static const char* p;
+char aud[124] = "Audio Recording";
+char audS[124] = "Audio Stopped";
+char pic[124] = "Picture Taken";
+char cam[124] = "Loading Camera";
+char vid[124] = "Starting Recording";
+char vidS[124] = "Recording Stopped";
+char rec[124] = "Recording...";
+char flashh[124] = "Flashlight on";
+char flashO[124] = "Flashlight off";  
+char listen[124] = "Listening...";  
+char phoneS[124] = "Phone Silenced";  
+char phone[124] = "Volume Normal";  
+static int eat = 0;
+
+
 
 static uint32_t length = 0;
 static uint8_t *data = NULL;
@@ -45,6 +61,7 @@ static TextLayer *text_layer;
 static MenuLayer *menu_layer;
 static BitmapLayer *image_layer;
 static MenuLayer *menu_layers;
+static char* replace;
 
 // Menu items can optionally have an icon drawn with them
 
@@ -87,6 +104,8 @@ static uint16_t menu_get_num_rows_callbacks(MenuLayer *menu_layer, uint16_t sect
   
 }
 
+
+
 void sendMes(Tuplet tup){
 app_message_outbox_begin(&iter);
 
@@ -99,48 +118,11 @@ app_message_outbox_begin(&iter);
 }
 
 
-  
- static void timer_modss(){
-   if(record == false){
-  text_layer_set_text(text_layer, pee);
-     record = true;
-
-   }else
-     if(record == true){
-  text_layer_set_text(text_layer, peep);     
-     
-          record = false;
-
-
-   }
-               timer = app_timer_register(1500 /* milliseconds */, timer_modss, NULL);
-
- }
-
-
-
-static void send_cmd(void) {
- DictionaryIterator *iters;
-   uint32_t chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
-
-  Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, 116);
-
- if(iters == NULL){
-   return;
- }
-  app_message_outbox_begin(&iters);
-    dict_write_tuplet(iters, &symbol_tuz);
-   dict_write_end(iters);
-  if((app_message_outbox_send() == APP_MSG_OK)) {
-    app_message_outbox_send();
-  }
+static void actionTimer(){
 }
 
 
-
-  
 static void timer_mods(){
-app_timer_cancel(timerz);
  layer_destroy(text_layer_get_layer(text_layer));
 
 app_timer_cancel(timer);
@@ -151,7 +133,7 @@ app_timer_cancel(timer);
 
 
 static void my_previous_click_handler(ClickRecognizerRef recognizer, void *context) {
-      register int sgiiz = 11;
+      register int sgiiz = 4;
 
   
      register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
@@ -165,7 +147,7 @@ static void my_previous_click_handler(ClickRecognizerRef recognizer, void *conte
 
 static void my_next_click_handler(ClickRecognizerRef recognizer, void *context) {
  
-         register int sgiiz = 11;
+         register int sgiiz = 4;
 
   
      register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
@@ -179,13 +161,10 @@ static void my_next_click_handler(ClickRecognizerRef recognizer, void *context) 
 
 static void my_select_click_handler(ClickRecognizerRef recognizer, void *context) {
  
- register int sgiiz = 12;
-
   
-     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
-    sendMes(symbol_tuple);  
 
-   Window *window = (Window *)context;
+           //    timer = app_timer_register(1000 /* milliseconds */, actionTimer, NULL);
+
 
 
 }
@@ -221,13 +200,9 @@ static void my_next_click_handlers(ClickRecognizerRef recognizer, void *context)
 
 static void my_select_click_handlers(ClickRecognizerRef recognizer, void *context) {
  
-      
- register int sgiiz = 12;
-
   
-     register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, sgiiz);
-    sendMes(symbol_tuple);  
- Window *window = (Window *)context;
+            //   timer = app_timer_register(1000 /* milliseconds */, actionTimer, NULL);
+
 
 }
 
@@ -237,7 +212,7 @@ static void my_select_click_handlers(ClickRecognizerRef recognizer, void *contex
 
 void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_DOWN, (ClickHandler) my_next_click_handler);
-    //  window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handler);
+      window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handler);
 
   window_single_click_subscribe(BUTTON_ID_UP, (ClickHandler) my_previous_click_handler);
 }
@@ -246,10 +221,114 @@ void click_config_provider(void *context) {
 void click_config_providers(void *context) {
   window_single_click_subscribe(BUTTON_ID_DOWN, (ClickHandler) my_next_click_handlers);
   
-   // window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handlers);
+    window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) my_select_click_handlers);
 
   window_single_click_subscribe(BUTTON_ID_UP, (ClickHandler) my_previous_click_handlers);
 }
+
+
+
+
+
+static void displayText(char* p){
+   
+   
+ 
+   text_layer_set_text(text_layer, p);
+
+
+}
+
+
+
+
+
+
+  
+ static void timer_modss(){
+   if(record == false){
+  text_layer_set_text(text_layer, pee);
+     record = true;
+
+   }else
+     if(record == true){
+  text_layer_set_text(text_layer, peep);     
+     
+          record = false;
+
+
+   }
+               timer = app_timer_register(1500 /* milliseconds */, timer_modss, NULL);
+
+ }
+
+static void send(uint32_t x) {
+ DictionaryIterator *iters;
+   uint32_t chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+
+  Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, x);
+
+ if(iters == NULL){
+   return;
+ }
+  app_message_outbox_begin(&iters);
+    dict_write_tuplet(iters, &symbol_tuz);
+   dict_write_end(iters);
+  if((app_message_outbox_send() == APP_MSG_OK)) {
+    app_message_outbox_send();
+  }else
+    if((app_message_outbox_send() == APP_MSG_BUSY)){
+
+    
+  }else
+    app_message_outbox_send();
+  
+}
+
+
+
+static void timer_modz(){
+
+send(index); 
+
+}
+
+
+
+static void send_cmd(uint32_t x) {
+ DictionaryIterator *iters;
+   uint32_t chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+
+  Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, x);
+
+ if(iters == NULL){
+   return;
+ }
+  app_message_outbox_begin(&iters);
+    dict_write_tuplet(iters, &symbol_tuz);
+   dict_write_end(iters);
+  if((app_message_outbox_send() == APP_MSG_OK)) {
+       timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
+
+
+   // app_message_outbox_send();
+  }else
+    if((app_message_outbox_send() == APP_MSG_BUSY)){
+   timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
+
+    
+  }else
+       timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
+
+  
+}
+
+
+
+  
+
+
+
 
 static void timer_mod(){
   
@@ -263,38 +342,31 @@ timer = app_timer_register(600 /* milliseconds */, timer_mods, NULL);
 }
 
 
+static int testString(char p, char z){
+  if(strcmp(&p, &z) == 0){
+      return 1;
+    }else
+    return 0;
+  
+}
+
 static void sync_error_callback(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
 }
 
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
-  switch (key) {
-    case WEATHER_ICON_KEY:
-     
-    // createImg(datar = new_tuple->value->uint32);
-      text_layer_set_text(text_layer, new_tuple->value->cstring);
     
-     char strinCheck[124] = "Picture Taken";
-    char strinChecks[124] = "Recording Started";
-    char strinCheckz[124] = "Recording has Stopped";
-    char strinCheckks[124] = "Audio Recording";
-    char strinCheckkerz[124] = "Flashlight On";
-    char strinCheckkerrz[124] = "Flashlight Off";
-    char strinCheckkeerz[124] = "Audio is Stopping";
-    char strinCheckkeerrz[124] = "action";
-    char strinCheckkers[124] = "Audio is Stopping";
+  text_layer_set_text(text_layer, replace);
+    
+    if(strcmp(new_tuple->value->cstring, phone) == 0 || strcmp(new_tuple->value->cstring, phoneS) == 0 || strcmp(new_tuple->value->cstring, vidS) == 0 || strcmp(new_tuple->value->cstring, vid) == 0 || strcmp(new_tuple->value->cstring, pic) == 0 || strcmp(new_tuple->value->cstring, cam) == 0){
+      text_layer_set_text(text_layer, new_tuple->value->cstring);
+            timer = app_timer_register(1500 /* milliseconds */, timer_mods, NULL);
 
-   if(strcmp(new_tuple->value->cstring, strinCheck) == 0){
+   } else
       
-      
-   }else
- if(strcmp(new_tuple->value->cstring, strinChecks) == 0){   
-     
-   }else
- if(strcmp(new_tuple->value->cstring, strinCheckz) == 0){
-     
-   }else
- if(strcmp(new_tuple->value->cstring, strinCheckks) == 0){   
+  
+   
+ if(strcmp(new_tuple->value->cstring, aud) == 0){   
       action_bar = action_bar_layer_create();
                   image = gbitmap_create_with_resource(RESOURCE_ID_stop);
                       images = gbitmap_create_with_resource(RESOURCE_ID_play);
@@ -302,16 +374,19 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 
 
     action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, image);
+
            //   action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, imagez);
 
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, images);
     
     action_bar_layer_add_to_window(action_bar, window);
+         text_layer_set_text(text_layer, new_tuple->value->cstring);
+
   // Set the click config provider:
   action_bar_layer_set_click_config_provider(action_bar,
                                              click_config_provider);
    }else
- if(strcmp(new_tuple->value->cstring, strinCheckkerz) == 0){ 
+ if(strcmp(new_tuple->value->cstring, flashh) == 0){ 
         action_bar = action_bar_layer_create();
                   image = gbitmap_create_with_resource(RESOURCE_ID_flashoff);
                       images = gbitmap_create_with_resource(RESOURCE_ID_flashon);
@@ -325,16 +400,40 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, images);
     
     action_bar_layer_add_to_window(action_bar, window);
+         text_layer_set_text(text_layer, new_tuple->value->cstring);
+
   // Set the click config provider:
   action_bar_layer_set_click_config_provider(action_bar,
                                              click_config_providers);
-     
-   }else
- if(strcmp(new_tuple->value->cstring, strinCheckkeerrz) == 0){ 
-   
-   }
-      break;
+  
+ }else
+      if(strcmp(new_tuple->value->cstring, audS) == 0){
+                      text_layer_set_text(text_layer, new_tuple->value->cstring);
+
+    }else
+      if(strcmp(new_tuple->value->cstring, flashO) == 0){
+                     text_layer_set_text(text_layer, new_tuple->value->cstring);
+ 
+    }else
+      if(strcmp(new_tuple->value->cstring, rec) == 0){
+                      text_layer_set_text(text_layer, new_tuple->value->cstring);
+
+    }else
+      if(strcmp(new_tuple->value->cstring, listen) == 0){
+            text_layer_set_text(text_layer, new_tuple->value->cstring);
+      eat = 1;
+
+ 
+    }else
+  if(eat == 1){
+                text_layer_set_text(text_layer, new_tuple->value->cstring);
+    eat = 0;
+
   }
+
+    
+    
+  
 }
 
 
@@ -400,9 +499,9 @@ case 5:
          case 7:
                   menu_cell_basic_draw(ctx, cell_layer, "Silence Phone", NULL, NULL);
           break;
-           case 8:
-                  menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
-          break;
+    //       case 8:
+      //            menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
+       //   break;
     //    case 9:
     //              menu_cell_basic_draw(ctx, cell_layer, "Security off", NULL, NULL);
     //      break;
@@ -418,13 +517,6 @@ case 5:
 
 
 
-static void timer_modz(){
-      send_cmd();
-
-
-
-}
-
 static void timer_modze(){
   
 }
@@ -433,7 +525,7 @@ static void timer_modze(){
 
 
 
-void addWindow(char* x, int y, int z, void (*f)()){
+void addWindow(char* x){
    window_layers = window_get_root_layer(window);
  GRect bounds = layer_get_bounds(window_layers);
  text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
@@ -441,9 +533,8 @@ void addWindow(char* x, int y, int z, void (*f)()){
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
 text_layer_set_text(text_layer, x);
   layer_add_child(window_layers, text_layer_get_layer(text_layer));
-  if(z == 1){
-timerz = app_timer_register(y /* milliseconds */, f, NULL);
-  }
+
+  
 }
 
 
@@ -457,11 +548,11 @@ static bool flash = false;
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
 
- /* Tuplet initial_values[] = {
+  Tuplet initial_values[] = {
     TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);
-      */
+      
   
 register  int symbol = 1;
 register int symbols = 2;
@@ -495,8 +586,10 @@ register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
 case 0:
 
 sendMes(symbol_tupez);
+    
+    replace = "Loading Camera";
    
-   addWindow("Loading Camera", 3500, 1, timer_mod);
+   addWindow("Loading Camera");
     
 
 
@@ -505,16 +598,18 @@ case 1:
 
 
 sendMes(symbol_tuplez);
-addWindow("Loading Camera", 3500, 1, timer_mod);
+        replace = "Loading Camera";
+
+addWindow("Loading Camera");
 break;
     case 2:
 
 
 sendMes(symbol_tups);
    
-
+replace = "Loading Audio";
      
-addWindow(NULL, 0, 0, NULL);
+addWindow("Loading Audio");
   
     
     
@@ -522,7 +617,9 @@ addWindow(NULL, 0, 0, NULL);
       break;
 case 3:
 sendMes(symbol_tuples);
-addWindow("Loading Voice Rec", 0, 0, NULL);
+        replace = "Loading Voice Rec";
+
+addWindow("Loading Voice Rec");
 
 
 
@@ -531,12 +628,12 @@ case 4:
   sendMes(symbol_tupz);
     if(flash == false){
     flash = true;
- addWindow(NULL, 0, 0, NULL);
+ addWindow(NULL);
   }else
     if(flash == true){
 layer_destroy(text_layer_get_layer(text_layer));
       flash = false;
-   addWindow(NULL, 0, 0, NULL);
+   addWindow(NULL);
 
   }
       break;
@@ -546,14 +643,16 @@ case 5:
   sendMes(symbol_tuple);
      if(audi == false){
       audi = true;
-  addWindow("Loading Recorder", 0, 0, NULL);
+           replace = "Loading Recorder";
+
+  addWindow("Loading Recorder");
       
     }else
       if(audi == true){
       layer_destroy(text_layer_get_layer(text_layer));
 
       audi = false;
-   addWindow(NULL, 1000, 1, timer_mods);
+   addWindow(NULL);
     
     
     }
@@ -567,7 +666,9 @@ case 5:
   sendMes(symbol_tup);
      if(audi == false){
       audi = true;
-   addWindow("Loading Recorder", 0, 0, NULL);
+           replace = "Loading Recorder";
+
+   addWindow("Loading Recorder");
 
       
     }else
@@ -575,7 +676,7 @@ case 5:
       layer_destroy(text_layer_get_layer(text_layer));
 
       audi = false;
-      addWindow(NULL, 1000, 1, timer_mods);
+      addWindow(NULL);
     
      }
     
@@ -585,24 +686,34 @@ case 5:
      sendMes(symbol_tuppz);
      if(audi == false){
       audi = true;
-   addWindow(NULL, 2500, 1, timer_mods);
+   addWindow(NULL);
       
     }else
       if(audi == true){
       
 
       audi = false;
-       addWindow(NULL, 2500, 1, timer_mods);
+       addWindow(NULL);
 
      }
     
     break;
 
     case 8:
-    
+     app_message_register_inbox_received(in_received_handler);
+   app_message_register_inbox_dropped(in_dropped_handler);
+   app_message_register_outbox_sent(out_sent_handler);
+  // Init buffers
+  // Register message handlers
+ 
+  app_message_register_outbox_failed(out_failed_handler);
+  
+     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
 
-addWindow(NULL, 0, 0, NULL);
 
+addWindow(NULL);
+
+  app_sync_deinit(&sync); 
 
   
 sendMes(symbol_tuzz);
@@ -671,14 +782,17 @@ void window_load(Window *window) {
 
 void createImg(uint8_t* i){
  
- 
+ image_layer = bitmap_layer_create( (GRect) {
+        .origin = {0, 0},
+        .size = {128, 128}
+    });
 
  // Wait till we are ready to try this out //
 
-*image = (GBitmap) {
+ *image = (GBitmap) {
         .addr = i,
-        .bounds = GRect(8, 20, 128, 128),
-        .row_size_bytes = 16,
+        .bounds = GRect(0, 0, 128, 128),
+        .row_size_bytes = 20,
     };
     
 
@@ -692,6 +806,15 @@ void createImg(uint8_t* i){
   
 }
 
+static void goBack(int x){
+  
+         timer = app_timer_register(x /* milliseconds */, timer_mods, NULL);
+
+}
+
+
+
+
 static int is = 0;
 
 
@@ -704,11 +827,16 @@ static int is = 0;
 
    start_tuple = dict_find(received, IMG_START);
       
-    
+    char* p;
     Tuple *tuple = dict_find(received, SPY_KEY_START);
     Tuple *get_tuple = dict_find(received, SPY_KEY_STOP); 
     stop_tuple = dict_find(received, IMG_STOP);
     data_tuple = dict_find(received, IMG_DATA);
+   Tuple *msg = dict_find(received, IMG_MSG);
+   
+   if(msg){
+     displayText(msg->value->cstring);
+   }
    
     if (start_tuple) {
               // timerz = app_timer_register(2500 /* milliseconds */, timer_modz, NULL);
@@ -718,7 +846,7 @@ static int is = 0;
       if(data != NULL){
       length = start_tuple->value->uint32;   
       index = 0;
-      send_cmd();
+      send_cmd(116);
       }
 
 /*          DictionaryIterator *iters;
@@ -739,6 +867,8 @@ static int is = 0;
        if (index + data_tuple->length <= length) {
         memcpy(data + index, data_tuple->value->data, data_tuple->length);
         index += data_tuple->length;
+   timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
+
       }
     }
 
@@ -755,7 +885,7 @@ static int is = 0;
         //  ctx->callback(image);
           // We have transfered ownership of this memory to the app. Make sure we dont free it.
           // (see netimage_destroy for cleanup)
-          createImg(image->imgdata);
+          createImg(data);
           data = NULL;
           index = length = 0;
         }
@@ -774,6 +904,10 @@ void window_unload(Window *window) {
   if(data != NULL){
   free(data);
   }
+  action_bar_layer_remove_from_window(action_bar);
+
+    action_bar_layer_destroy(action_bar);
+
   app_message_deregister_callbacks();
   app_sync_deinit(&sync); 
     app_message_set_context(NULL);
@@ -788,17 +922,8 @@ int main(void) {
   
   window = window_create();
   app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
-   app_message_register_inbox_received(in_received_handler);
-   app_message_register_inbox_dropped(in_dropped_handler);
-   app_message_register_outbox_sent(out_sent_handler);
-  // Init buffers
-  // Register message handlers
- 
-  app_message_register_outbox_failed(out_failed_handler);
-  
-     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+       app_message_open(256, 256);
 
-     app_message_open(256, 256);
 
 
   // Setup the window handlers

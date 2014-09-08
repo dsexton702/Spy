@@ -4,15 +4,16 @@
 #define IMAGE_HEIGHT  144
 #define IMAGE_COLS ((IMAGE_WIDTH - 1) / (8 * sizeof(uint32_t)) + 1)
 #define IMAGE_ROWS (IMAGE_HEIGHT)
-#define NUM_FIRST_MENU_ITEMS 9
+#define NUM_FIRST_MENU_ITEMS 8
 #define NUM_MENU_SECTIONS 1
 
 enum {
-  SPY_KEY_START ,
+  SPY_KEY_START,
   SPY_KEY_STOP,
   IMG_START,
   IMG_DATA,
   IMG_STOP,
+  IMG_MSG,
 };
 
 typedef struct{
