@@ -16,6 +16,8 @@ Layer *window_layers;
 static GBitmap *image;
 static GBitmap *images;
 static GBitmap *imagez;
+static GBitmap bmpimage;
+
 static bool play = false;
 static int transNum;
 DictionaryIterator *outbox;
@@ -37,11 +39,12 @@ char listen[124] = "Listening...";
 char phoneS[124] = "Phone Silenced";  
 char phone[124] = "Volume Normal";  
 static int eat = 0;
+uint8_t* imgData;
 
 
 
 static uint32_t length = 0;
-static uint8_t *data = NULL;
+static uint8_t* data;
 static uint32_t index = 0;
 
 
@@ -499,9 +502,9 @@ case 5:
          case 7:
                   menu_cell_basic_draw(ctx, cell_layer, "Silence Phone", NULL, NULL);
           break;
-    //       case 8:
-      //            menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
-       //   break;
+           case 8:
+                  menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
+          break;
     //    case 9:
     //              menu_cell_basic_draw(ctx, cell_layer, "Security off", NULL, NULL);
     //      break;
@@ -525,6 +528,10 @@ static void timer_modze(){
 
 
 
+  
+
+
+
 void addWindow(char* x){
    window_layers = window_get_root_layer(window);
  GRect bounds = layer_get_bounds(window_layers);
@@ -533,6 +540,11 @@ void addWindow(char* x){
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
 text_layer_set_text(text_layer, x);
   layer_add_child(window_layers, text_layer_get_layer(text_layer));
+  
+  
+  
+  
+  
 
   
 }
@@ -548,10 +560,11 @@ static bool flash = false;
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
 
-  Tuplet initial_values[] = {
+/*  Tuplet initial_values[] = {
     TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);
+      */
       
   
 register  int symbol = 1;
@@ -700,34 +713,42 @@ case 5:
     break;
 
     case 8:
+      app_sync_deinit(&sync); 
+
      app_message_register_inbox_received(in_received_handler);
    app_message_register_inbox_dropped(in_dropped_handler);
    app_message_register_outbox_sent(out_sent_handler);
-  // Init buffers
-  // Register message handlers
- 
   app_message_register_outbox_failed(out_failed_handler);
   
      // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
 
 
-addWindow(NULL);
+//addWindow(NULL);
+    
 
-  app_sync_deinit(&sync); 
 
+
+
+
+ 
   
 sendMes(symbol_tuzz);
 
 
     break;
     
-    case 9:
+  /*  case 9:
+      app_message_register_inbox_received(in_received_handler);
+   app_message_register_inbox_dropped(in_dropped_handler);
+   app_message_register_outbox_sent(out_sent_handler);
+   app_message_register_outbox_failed(out_failed_handler);
  
-//  sendMes(symbol_tuz);
+  sendMes(symbol_tuz);
 
 
 
     break;
+    */
   }
  
 
@@ -756,6 +777,7 @@ void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
+
   // Create the menu layer
   menu_layer = menu_layer_create(bounds);
    
@@ -778,31 +800,54 @@ void window_load(Window *window) {
   
 }
 
+static void layer_update_callback(Layer *me, GContext* ctx) {
+  // We make sure the dimensions of the GRect to draw into
+  // are equal to the size of the bitmap--otherwise the image
+  // will automatically tile. Which might be what *you* want.
+
+  GRect bounds = image->bounds;
+
+  graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 0, 0 }, .size = bounds.size });
+
+  graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 144, 168 }, .size = bounds.size });
+}
+
  
 
 void createImg(uint8_t* i){
- 
- image_layer = bitmap_layer_create( (GRect) {
-        .origin = {0, 0},
-        .size = {128, 128}
-    });
+   Layer *window_layers = window_get_root_layer(window);
+GRect bounds = layer_get_bounds(window_layers);
 
- // Wait till we are ready to try this out //
-
- *image = (GBitmap) {
-        .addr = i,
-        .bounds = GRect(0, 0, 128, 128),
-        .row_size_bytes = 20,
-    };
-    
-
-    bitmap_layer_set_bitmap(image_layer, image);
-    bitmap_layer_set_alignment(image_layer, GAlignCenter);
-    layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(image_layer));
   
+ bmpimage = (GBitmap) {
+         .addr = i,
+         .bounds = GRect(0,0,128,128),
+         .row_size_bytes = 16,
+     };
+
+  image_layer = bitmap_layer_create(bounds);
+  bitmap_layer_set_bitmap(image_layer, &bmpimage);
+  layer_add_child(window_layers, bitmap_layer_get_layer(image_layer));
 
   
   
+  /* image_layer = bitmap_layer_create(GRect(0, 0, 144, 168));
+  bitmap_layer_set_bitmap(image_layer, bm);
+  layer_add_child(window_layer, bitmap_layer_get_layer(image_layer));
+  
+  
+  GRect bounds = layer_get_frame(window_layer);
+  layer = layer_create(bounds);
+  layer_set_update_proc(layer, layer_update_callback);
+  layer_add_child(window_layer, layer);
+
+  image = bm;
+
+  */
+  
+  
+                                APP_LOG(APP_LOG_LEVEL_DEBUG, "end of function");
+
   
 }
 
@@ -842,8 +887,10 @@ static int is = 0;
               // timerz = app_timer_register(2500 /* milliseconds */, timer_modz, NULL);
 
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Start transmission. Size=%lu", start_tuple->value->uint32);
-      data = malloc(start_tuple->value->uint32);
-      if(data != NULL){
+        if(data != NULL){
+        free(data);
+        }
+    
       length = start_tuple->value->uint32;   
       index = 0;
       send_cmd(116);
@@ -859,13 +906,13 @@ static int is = 0;
  dict_write_end(iters);
   app_message_outbox_send();
   */
-    }
+    
         
     if(data_tuple){
             APP_LOG(APP_LOG_LEVEL_DEBUG, "data sent. index=%lu, length=%d", index, data_tuple->length);
 
        if (index + data_tuple->length <= length) {
-        memcpy(data + index, data_tuple->value->data, data_tuple->length);
+        memcpy(data + index, &data_tuple->value->data, data_tuple->length);        
         index += data_tuple->length;
    timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
 
@@ -875,27 +922,53 @@ static int is = 0;
    
       
      if(stop_tuple){
+                   APP_LOG(APP_LOG_LEVEL_DEBUG, "final data sent. index=%lu, length=%d", index, stop_tuple->length);
+
         if (data && length > 0 && index > 0) {
         Image *image = malloc(sizeof(Image));
         GBitmap *bitmap = gbitmap_create_with_data(data);
         if (image && bitmap) {
           printf("Gbitmap=%p Gbitmap->addr=%p ctx->data=%p", bitmap, bitmap->addr, data);
           image->bm = bitmap;
-          image->imgdata = data;
+          imgData = data;
         //  ctx->callback(image);
+          
+          
+          
           // We have transfered ownership of this memory to the app. Make sure we dont free it.
           // (see netimage_destroy for cleanup)
-          createImg(data);
+                          APP_LOG(APP_LOG_LEVEL_DEBUG, "trying to post image");
+          
+          
+          
+
+          createImg(imgData);
+
+          
+                                        APP_LOG(APP_LOG_LEVEL_DEBUG, "before data goes NULL");
+
           data = NULL;
           index = length = 0;
-        }
+        } else {
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "Unable to create GBitmap. Is this a valid PBI?");
+          // free memory
+          free(data);
+          data = NULL;
+          index = length = 0;
+          if (image) {
+            free(image);
+          }
      }
      
     }
 
  
 
+     }
 
+       
+     
+ 
 
  }
 
@@ -919,11 +992,14 @@ app_timer_cancel(timer);
 
 int main(void) {
 
+
   
   window = window_create();
   app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
        app_message_open(256, 256);
 
+    data = malloc(sizeof(uint8_t) * (5 * 4) * 168 + 12);
+    imgData =  malloc(sizeof(uint8_t) * (5 * 4) * 168 + 12);
 
 
   // Setup the window handlers
