@@ -38,8 +38,10 @@ char flashO[124] = "Flashlight off";
 char listen[124] = "Listening...";  
 char phoneS[124] = "Phone Silenced";  
 char phone[124] = "Volume Normal";  
+char motion[124] = "Motion Detected";
 static int eat = 0;
 uint8_t* imgData;
+static bool detect = false;
 
 
 
@@ -230,7 +232,10 @@ void click_config_providers(void *context) {
 }
 
 
-
+static const VibePattern custom_pattern = {
+  .durations = (uint32_t []) {300},
+  .num_segments = 1
+};
 
 
 static void displayText(char* p){
@@ -243,6 +248,11 @@ static void displayText(char* p){
 }
 
 
+static void motionTimer(){
+  
+    vibes_enqueue_custom_pattern(custom_pattern);
+
+}
 
 
 
@@ -360,6 +370,13 @@ static void sync_error_callback(DictionaryResult dict_error, AppMessageResult ap
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
     
   text_layer_set_text(text_layer, replace);
+  
+  if(strcmp(new_tuple->value->cstring, motion) == 0){
+      text_layer_set_text(text_layer, new_tuple->value->cstring);
+
+                   timer = app_timer_register(0 /* milliseconds */, motionTimer, NULL);
+
+  }
     
     if(strcmp(new_tuple->value->cstring, phone) == 0 || strcmp(new_tuple->value->cstring, phoneS) == 0 || strcmp(new_tuple->value->cstring, vidS) == 0 || strcmp(new_tuple->value->cstring, vid) == 0 || strcmp(new_tuple->value->cstring, pic) == 0 || strcmp(new_tuple->value->cstring, cam) == 0){
       text_layer_set_text(text_layer, new_tuple->value->cstring);
@@ -454,8 +471,8 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
   // Determine which section we're working with
  
-      // Draw title text in the section header
-
+    menu_cell_basic_header_draw(ctx, cell_layer, "Welcome to Spy");
+  
       
 
    
@@ -503,11 +520,11 @@ case 5:
                   menu_cell_basic_draw(ctx, cell_layer, "Silence Phone", NULL, NULL);
           break;
            case 8:
-                  menu_cell_basic_draw(ctx, cell_layer, "Live Preview", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, "Motion Detector", NULL, NULL);
           break;
-    //    case 9:
-    //              menu_cell_basic_draw(ctx, cell_layer, "Security off", NULL, NULL);
-    //      break;
+    //   case 9:
+   //              menu_cell_basic_draw(ctx, cell_layer, "Motion Detection", NULL, NULL);
+      //  break;
       
       }
      
@@ -560,11 +577,11 @@ static bool flash = false;
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
 
-/*  Tuplet initial_values[] = {
+  Tuplet initial_values[] = {
     TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);
-      */
+      
       
   
 register  int symbol = 1;
@@ -577,6 +594,7 @@ register int sigs = 7;
 register int sgis = 8;
 register int sgiz = 9;
 register int sgiiz = 10;
+register int sgiiiz = 11;
 
 
 register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, symbol);
@@ -588,6 +606,9 @@ register Tuplet symbol_tupez = TupletInteger(SPY_KEY_START, signz);
 register Tuplet symbol_tup = TupletInteger(SPY_KEY_START, sigs);
 register Tuplet symbol_tuppz = TupletInteger(SPY_KEY_START, sgis);
 register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
+register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
+  register Tuplet symbol_tuzze = TupletInteger(SPY_KEY_START, sgiiiz);
+
 
 
 
@@ -713,19 +734,18 @@ case 5:
     break;
 
     case 8:
-      app_sync_deinit(&sync); 
-
-     app_message_register_inbox_received(in_received_handler);
-   app_message_register_inbox_dropped(in_dropped_handler);
-   app_message_register_outbox_sent(out_sent_handler);
-  app_message_register_outbox_failed(out_failed_handler);
-  
-     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
-
-
-//addWindow(NULL);
+    replace = "Detecting Motion";
+    if(detect == false){
+       sendMes(symbol_tuz);
     
+    addWindow("Detecting Motion");
+      detect = true;
+    }else
+      if(detect == true){
+      sendMes(symbol_tuzze);
+            layer_destroy(text_layer_get_layer(text_layer));
 
+    }
 
 
 
@@ -737,18 +757,27 @@ sendMes(symbol_tuzz);
 
     break;
     
-  /*  case 9:
-      app_message_register_inbox_received(in_received_handler);
+    case 9:
+
+
+    
+    
+   app_sync_deinit(&sync); 
+
+     app_message_register_inbox_received(in_received_handler);
    app_message_register_inbox_dropped(in_dropped_handler);
    app_message_register_outbox_sent(out_sent_handler);
-   app_message_register_outbox_failed(out_failed_handler);
- 
-  sendMes(symbol_tuz);
+  app_message_register_outbox_failed(out_failed_handler);
+  
+     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
+
+
+//addWindow(NULL);
 
 
 
     break;
-    */
+    
   }
  
 
@@ -973,9 +1002,15 @@ static int is = 0;
  }
 
 void window_unload(Window *window) {
+    register Tuplet sym = TupletInteger(SPY_KEY_START, 11);
+
   // Destroy the menu layer
   if(data != NULL){
   free(data);
+  }
+  if(detect == true){
+    detect = false;
+    sendMes(sym);
   }
   action_bar_layer_remove_from_window(action_bar);
 
