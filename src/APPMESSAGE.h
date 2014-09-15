@@ -4,7 +4,7 @@
 #define IMAGE_HEIGHT  144
 #define IMAGE_COLS ((IMAGE_WIDTH - 1) / (8 * sizeof(uint32_t)) + 1)
 #define IMAGE_ROWS (IMAGE_HEIGHT)
-#define NUM_FIRST_MENU_ITEMS 9
+#define NUM_FIRST_MENU_ITEMS 10
 #define NUM_MENU_SECTIONS 1
 
 enum {

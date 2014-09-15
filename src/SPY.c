@@ -440,6 +440,7 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 
     }else
       if(strcmp(new_tuple->value->cstring, listen) == 0){
+      replace = NULL;
             text_layer_set_text(text_layer, new_tuple->value->cstring);
       eat = 1;
 
@@ -522,9 +523,9 @@ case 5:
            case 8:
                   menu_cell_basic_draw(ctx, cell_layer, "Motion Detector", NULL, NULL);
           break;
-    //   case 9:
-   //              menu_cell_basic_draw(ctx, cell_layer, "Motion Detection", NULL, NULL);
-      //  break;
+   case 9:
+                menu_cell_basic_draw(ctx, cell_layer, "Take pic and View", NULL, NULL);
+        break;
       
       }
      
@@ -567,6 +568,12 @@ text_layer_set_text(text_layer, x);
 }
 
 
+static void regSync(){
+   Tuplet initial_values[] = {
+    TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
+  app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
+      sync_tuple_changed_callback, sync_error_callback, NULL);
+}
 
 static bool audi = false;
 static bool flash = false;
@@ -577,10 +584,7 @@ static bool flash = false;
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
 
-  Tuplet initial_values[] = {
-    TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
-  app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
-      sync_tuple_changed_callback, sync_error_callback, NULL);
+ 
       
       
   
@@ -595,6 +599,8 @@ register int sgis = 8;
 register int sgiz = 9;
 register int sgiiz = 10;
 register int sgiiiz = 11;
+  register int sgiiiiz = 12;
+
 
 
 register Tuplet symbol_tuple = TupletInteger(SPY_KEY_START, symbol);
@@ -608,6 +614,8 @@ register Tuplet symbol_tuppz = TupletInteger(SPY_KEY_START, sgis);
 register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
 register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
   register Tuplet symbol_tuzze = TupletInteger(SPY_KEY_START, sgiiiz);
+    register Tuplet sy = TupletInteger(SPY_KEY_START, sgiiiiz);
+
 
 
 
@@ -618,6 +626,9 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
   switch (cell_index->row) {
 
 case 0:
+
+      app_message_deregister_callbacks();
+    regSync();
 
 sendMes(symbol_tupez);
     
@@ -630,6 +641,8 @@ sendMes(symbol_tupez);
 break;
 case 1:
 
+  app_message_deregister_callbacks();
+    regSync();
 
 sendMes(symbol_tuplez);
         replace = "Loading Camera";
@@ -637,7 +650,9 @@ sendMes(symbol_tuplez);
 addWindow("Loading Camera");
 break;
     case 2:
+  app_message_deregister_callbacks();
 
+    regSync();
 
 sendMes(symbol_tups);
    
@@ -650,6 +665,10 @@ addWindow("Loading Audio");
     
       break;
 case 3:
+      app_message_deregister_callbacks();
+
+        regSync();
+
 sendMes(symbol_tuples);
         replace = "Loading Voice Rec";
 
@@ -659,6 +678,10 @@ addWindow("Loading Voice Rec");
 
       break;
 case 4:
+      app_message_deregister_callbacks();
+
+        regSync();
+
   sendMes(symbol_tupz);
     if(flash == false){
     flash = true;
@@ -672,7 +695,9 @@ layer_destroy(text_layer_get_layer(text_layer));
   }
       break;
 case 5:
+  app_message_deregister_callbacks();
 
+    regSync();
 
   sendMes(symbol_tuple);
      if(audi == false){
@@ -695,7 +720,9 @@ case 5:
        break;
 	  
 	  case 6:
+  app_message_deregister_callbacks();
 
+    regSync();
 
   sendMes(symbol_tup);
      if(audi == false){
@@ -717,6 +744,10 @@ case 5:
       break;
     
     case 7:
+      app_message_deregister_callbacks();
+
+        regSync();
+
      sendMes(symbol_tuppz);
      if(audi == false){
       audi = true;
@@ -734,6 +765,10 @@ case 5:
     break;
 
     case 8:
+      app_message_deregister_callbacks();
+
+        regSync();
+
     replace = "Detecting Motion";
     if(detect == false){
        sendMes(symbol_tuz);
@@ -768,11 +803,14 @@ sendMes(symbol_tuzz);
    app_message_register_inbox_dropped(in_dropped_handler);
    app_message_register_outbox_sent(out_sent_handler);
   app_message_register_outbox_failed(out_failed_handler);
+    
+    sendMes(sy);
+
   
      // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
 
 
-//addWindow(NULL);
+addWindow("Loading Image");
 
 
 
@@ -844,19 +882,18 @@ static void layer_update_callback(Layer *me, GContext* ctx) {
  
 
 void createImg(uint8_t* i){
-   Layer *window_layers = window_get_root_layer(window);
-GRect bounds = layer_get_bounds(window_layers);
+  
 
   
  bmpimage = (GBitmap) {
          .addr = i,
-         .bounds = GRect(0,0,128,128),
-         .row_size_bytes = 16,
+         .bounds = GRect(0,0,144,168),
+         .row_size_bytes = 20,
      };
 
-  image_layer = bitmap_layer_create(bounds);
+  
   bitmap_layer_set_bitmap(image_layer, &bmpimage);
-  layer_add_child(window_layers, bitmap_layer_get_layer(image_layer));
+  layer_mark_dirty((Layer*)image_layer);
 
   
   
@@ -923,6 +960,11 @@ static int is = 0;
       length = start_tuple->value->uint32;   
       index = 0;
       send_cmd(116);
+      Layer *window_layers = window_get_root_layer(window);
+GRect bounds = layer_get_bounds(window_layers);
+  image_layer = bitmap_layer_create(bounds);
+  bitmap_layer_set_bitmap(image_layer, &bmpimage);
+  layer_add_child(window_layers, bitmap_layer_get_layer(image_layer));
       }
 
 /*          DictionaryIterator *iters;
@@ -943,6 +985,8 @@ static int is = 0;
        if (index + data_tuple->length <= length) {
         memcpy(data + index, &data_tuple->value->data, data_tuple->length);        
         index += data_tuple->length;
+                   createImg(data);
+
    timer = app_timer_register(5000 /* milliseconds */, timer_modz, NULL);
 
       }
@@ -969,9 +1013,9 @@ static int is = 0;
                           APP_LOG(APP_LOG_LEVEL_DEBUG, "trying to post image");
           
           
-          
+                app_message_deregister_callbacks();
 
-          createImg(imgData);
+
 
           
                                         APP_LOG(APP_LOG_LEVEL_DEBUG, "before data goes NULL");
@@ -1031,6 +1075,8 @@ int main(void) {
   
   window = window_create();
   app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
+  
+  
        app_message_open(256, 256);
 
     data = malloc(sizeof(uint8_t) * (5 * 4) * 168 + 12);
