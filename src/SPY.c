@@ -166,9 +166,27 @@ static void my_next_click_handler(ClickRecognizerRef recognizer, void *context) 
 
 static void my_select_click_handler(ClickRecognizerRef recognizer, void *context) {
  
-  
+   action_bar_layer_remove_from_window(action_bar);
+   gbitmap_destroy(image);
+  gbitmap_destroy(images);
+layer_mark_dirty((Layer*)text_layer);
+  text_layer_destroy(text_layer);
 
-           //    timer = app_timer_register(1000 /* milliseconds */, actionTimer, NULL);
+
+//  layer_mark_dirty((Layer*)window_layer);
+   // layer_mark_dirty((Layer*)window_layers);
+
+  
+      layer_mark_dirty((Layer*)menu_layer);
+  
+ // layer_remove_from_parent((Layer*)action_bar);
+  
+ // layer_mark_dirty((Layer*)action_bar);
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+  
+  
 
 
 
@@ -205,8 +223,26 @@ static void my_next_click_handlers(ClickRecognizerRef recognizer, void *context)
 
 static void my_select_click_handlers(ClickRecognizerRef recognizer, void *context) {
  
+   action_bar_layer_remove_from_window(action_bar);
+   gbitmap_destroy(image);
+  gbitmap_destroy(images);
+layer_mark_dirty((Layer*)text_layer);
+  text_layer_destroy(text_layer);
+
+
+//  layer_mark_dirty((Layer*)window_layer);
+   // layer_mark_dirty((Layer*)window_layers);
+
   
-            //   timer = app_timer_register(1000 /* milliseconds */, actionTimer, NULL);
+      layer_mark_dirty((Layer*)menu_layer);
+  
+ // layer_remove_from_parent((Layer*)action_bar);
+  
+ // layer_mark_dirty((Layer*)action_bar);
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+  
 
 
 }
