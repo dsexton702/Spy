@@ -4,7 +4,7 @@
 #define IMAGE_HEIGHT  144
 #define IMAGE_COLS ((IMAGE_WIDTH - 1) / (8 * sizeof(uint32_t)) + 1)
 #define IMAGE_ROWS (IMAGE_HEIGHT)
-#define NUM_FIRST_MENU_ITEMS 10
+#define NUM_FIRST_MENU_ITEMS 9
 #define NUM_MENU_SECTIONS 1
 
 enum {
@@ -14,6 +14,7 @@ enum {
   IMG_DATA,
   IMG_STOP,
   IMG_MSG,
+  GET_MENU,
 };
 
 typedef struct{
@@ -23,16 +24,27 @@ typedef struct{
 
 
 
+char *menus[15];
+char *menArray;
+MenuLayer *menu_layer;
+MenuLayer *menu_layers;
+bool isCam;
+bool gobackCam;
+bool isVid;
+bool isSet;
+bool listener;
+bool detector;
 
 
 
-  
+Layer *window_layer;
+Layer *window_layers;
+Window* y;
 
-
-
-
-
-
+Window* window;
+Window* windows;
+Window* windowz;
+static char* replace;
 static BitmapLayer *image_layer;
 static TextLayer *text_layer;
 DictionaryIterator *iter;
@@ -45,7 +57,11 @@ static Tuple *data_tuple;
 static Tuple *stop_tuple;
 
 
+void addWindow(char* x, Window* w);
 
+void sendMes(Tuplet tup);
+
+void regSync();
 
 void createImg(uint8_t* i);
 
@@ -63,6 +79,25 @@ void in_received_handler(DictionaryIterator *received, void *context);
 
 
 void in_dropped_handler(AppMessageResult reason, void *context);
+
+void camera(Tuplet tup);
+
+void vidCam(Tuplet tup);
+
+void audRec(Tuplet tup);
+
+void voice(Tuplet tup);
+
+void motionD(Tuplet tup);
+
+void flashF(Tuplet tup);
+
+void silence(Tuplet tup);
+
+void window_sets(Window *window, MenuLayerCallbacks men);
+
+void changeWindow(Window *window, MenuLayerCallbacks man);
+
 
 
 

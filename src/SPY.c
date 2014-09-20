@@ -4,9 +4,8 @@
 
 
 
+
 static AppSync sync;
-static Window *window;
-static Window *windows;
 bool record = false;
 static AppTimer *timerz;
 static Layer *layer;
@@ -17,7 +16,7 @@ static GBitmap *image;
 static GBitmap *images;
 static GBitmap *imagez;
 static GBitmap bmpimage;
-
+MenuLayerCallbacks man;
 static bool play = false;
 static int transNum;
 DictionaryIterator *outbox;
@@ -42,6 +41,11 @@ char motion[124] = "Motion Detected";
 static int eat = 0;
 uint8_t* imgData;
 static bool detect = false;
+int z = 0;
+bool isCam = false;
+bool gobackCam = false;
+bool isVid = false;
+bool isSet = false;
 
 
 
@@ -53,7 +57,6 @@ static uint32_t index = 0;
 
 static char *pee = "Recording...";
 static char *peep = "";
-static Layer *window_layer;
 static AppSync sync;
 static ActionBarLayer *action_bar;
 
@@ -63,9 +66,7 @@ static uint8_t sync_buffer[1024];
 static TextLayer *text_layer;
 // This is a menu layer
 // You have more control than with a simple menu layer
-static MenuLayer *menu_layer;
 static BitmapLayer *image_layer;
-static MenuLayer *menu_layers;
 static char* replace;
 
 // Menu items can optionally have an icon drawn with them
@@ -86,6 +87,9 @@ static GBitmap *menu_background;
 // A callback is used to specify the amount of sections of menu items
 // With this, you can dynamically add and remove sections
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
+  if(isCam == true || isVid == true || isSet == true){
+    return 1;
+  }else
   return NUM_MENU_SECTIONS;
 }
 
@@ -93,6 +97,17 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 // You can also dynamically add and remove items using this
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
  
+  if(isCam == true){
+    return 3;
+  }
+  
+   if(isVid == true){
+    return 2;
+  }
+  
+   if(isSet == true){
+    return 5;
+  }
       return NUM_FIRST_MENU_ITEMS;
 
     
@@ -100,14 +115,6 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
   
 }
 
-static uint16_t menu_get_num_rows_callbacks(MenuLayer *menu_layer, uint16_t section_index, void *data) {
- 
-      return 2;
-
-    
-  
-  
-}
 
 
 
@@ -128,10 +135,21 @@ static void actionTimer(){
 
 
 static void timer_mods(){
- layer_destroy(text_layer_get_layer(text_layer));
+
+  text_layer_destroy(text_layer);
+
+   window_stack_pop(true);
+
+
+  layer_mark_dirty((Layer*)menu_layer);
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
 
 app_timer_cancel(timer);
 
+  isCam = false;
 
 
 }
@@ -191,6 +209,7 @@ menu_layer_set_click_config_onto_window(menu_layer, window);
 
 
 }
+
 
 
 
@@ -287,6 +306,10 @@ static void displayText(char* p){
 static void motionTimer(){
   
     vibes_enqueue_custom_pattern(custom_pattern);
+  if(detector == false){
+              timer = app_timer_register(1500 /* milliseconds */, timer_mods, NULL);
+  }
+
 
 }
 
@@ -374,7 +397,30 @@ static void send_cmd(uint32_t x) {
 
 
 
-  
+  static void grabSettings(){
+    int i = 0;
+    for(i=0;i<10;i++){
+    menus[i] = malloc(24);
+    if(menus[i] == NULL){
+      
+    }
+    }
+    app_sync_deinit(&sync); 
+
+     app_message_register_inbox_received(in_received_handler);
+   app_message_register_inbox_dropped(in_dropped_handler);
+   app_message_register_outbox_sent(out_sent_handler);
+  app_message_register_outbox_failed(out_failed_handler);
+    register int set = 13;
+
+
+
+register Tuplet tuple = TupletInteger(SPY_KEY_START, set);
+    
+      sendMes(tuple);
+
+    
+  }
 
 
 
@@ -405,9 +451,15 @@ static void sync_error_callback(DictionaryResult dict_error, AppMessageResult ap
 
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
     
+  if(listener == false){
   text_layer_set_text(text_layer, replace);
+  }else
+    if(listener == true){
+    
+  }
   
   if(strcmp(new_tuple->value->cstring, motion) == 0){
+    detector = true;
       text_layer_set_text(text_layer, new_tuple->value->cstring);
 
                    timer = app_timer_register(0 /* milliseconds */, motionTimer, NULL);
@@ -416,7 +468,7 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
     
     if(strcmp(new_tuple->value->cstring, phone) == 0 || strcmp(new_tuple->value->cstring, phoneS) == 0 || strcmp(new_tuple->value->cstring, vidS) == 0 || strcmp(new_tuple->value->cstring, vid) == 0 || strcmp(new_tuple->value->cstring, pic) == 0 || strcmp(new_tuple->value->cstring, cam) == 0){
       text_layer_set_text(text_layer, new_tuple->value->cstring);
-            timer = app_timer_register(1500 /* milliseconds */, timer_mods, NULL);
+      motionTimer();
 
    } else
       
@@ -476,17 +528,9 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 
     }else
       if(strcmp(new_tuple->value->cstring, listen) == 0){
-      replace = NULL;
+      listener = true;
             text_layer_set_text(text_layer, new_tuple->value->cstring);
-      eat = 1;
-
- 
-    }else
-  if(eat == 1){
-                text_layer_set_text(text_layer, new_tuple->value->cstring);
-    eat = 0;
-
-  }
+    }
 
     
     
@@ -516,6 +560,22 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 }
 
 
+static void rowInit(){
+ menus[0] = "Camera";
+   menus[1] = "Video Camera";
+     menus[2] = "Audio Recording";
+
+     menus[3] = "Voice Recognition";
+
+     menus[4] = "Flashlight";
+
+     menus[5] = "Silence Phone";
+
+     menus[6] = "Motion Detector";
+
+     menus[7] = "Take pic and view";
+
+}
 
 
 
@@ -525,46 +585,108 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
   switch (cell_index->section) {
     case 0:
       // Use the row to specify which item we'll draw
+    
+     if(isCam == true){
+       switch (cell_index->row){
+          case 0:
+                    menu_cell_basic_draw(ctx, cell_layer, "Take Front Pic", NULL, NULL);
+          break;
+          case 1:
+                    menu_cell_basic_draw(ctx, cell_layer, "Take Back Pic", NULL, NULL);
+          break;
+          case 2:
+                    menu_cell_basic_draw(ctx, cell_layer, "Take pic w/Flash", NULL, NULL);
+          break;
+       }
+
+        }
+    
+    if(isVid == true){
+       switch (cell_index->row){
+          case 0:
+                    menu_cell_basic_draw(ctx, cell_layer, "Take Front Vid", NULL, NULL);
+          break;
+          case 1:
+                    menu_cell_basic_draw(ctx, cell_layer, "Take Back Vid", NULL, NULL);
+          break;
+       }
+
+        }
+    
+    
+    if(isSet == true){
+       switch (cell_index->row){
+          case 0:
+                    menu_cell_basic_draw(ctx, cell_layer, "Vibe on Success", NULL, NULL);
+          break;
+          case 1:
+                    menu_cell_basic_draw(ctx, cell_layer, "Video Quality", NULL, NULL);
+          break;
+         case 2:
+                             menu_cell_basic_draw(ctx, cell_layer, "Pic on Detection", NULL, NULL);
+
+         break;
+          case 3:
+                             menu_cell_basic_draw(ctx, cell_layer, "Vid on Detection", NULL, NULL);
+
+         break;
+         case 4:
+                             menu_cell_basic_draw(ctx, cell_layer, "Detect while off", NULL, NULL);
+
+         break;
+       }
+
+        }
+    
+    
+    
+    
+    if(isCam == false && isVid == false && isSet == false){
       switch (cell_index->row) {
+        
+       
+       
         case 0:
           // This is a basic menu item with a title and subtitle
-          menu_cell_basic_draw(ctx, cell_layer, "Front Facing Pic", NULL, NULL);
+          menu_cell_basic_draw(ctx, cell_layer, menus[0], NULL, NULL);
           break;
 
         case 1:
           // This is a basic menu icon with a cycling icon
-          menu_cell_basic_draw(ctx, cell_layer, "Back Cam Pic", NULL, NULL);
+          menu_cell_basic_draw(ctx, cell_layer, menus[1], NULL, NULL);
+        
           break;
 
         case 2:
-                  menu_cell_basic_draw(ctx, cell_layer, "Audio Recording", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[2], NULL, NULL);
           break;
 case 3:
-                  menu_cell_basic_draw(ctx, cell_layer, "Voice Recognition", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[3], NULL, NULL);
           break;
 case 4:
-                  menu_cell_basic_draw(ctx, cell_layer, "Flashlight", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[4], NULL, NULL);
           break;
 case 5:
-                  menu_cell_basic_draw(ctx, cell_layer, "Video Camera", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[5], NULL, NULL);
           break;
 		  
 		  case 6:
-                  menu_cell_basic_draw(ctx, cell_layer, "Front Video Cam", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[6], NULL, NULL);
           break;
         
          case 7:
-                  menu_cell_basic_draw(ctx, cell_layer, "Silence Phone", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, menus[7], NULL, NULL);
           break;
            case 8:
-                  menu_cell_basic_draw(ctx, cell_layer, "Motion Detector", NULL, NULL);
+                  menu_cell_basic_draw(ctx, cell_layer, "Settings", NULL, NULL);
           break;
-   case 9:
+ /*  case 9:
                 menu_cell_basic_draw(ctx, cell_layer, "Take pic and View", NULL, NULL);
         break;
+        */
       
       }
-     
+    }
   }
 }
 
@@ -586,14 +708,26 @@ static void timer_modze(){
 
 
 
-void addWindow(char* x){
-   window_layers = window_get_root_layer(window);
- GRect bounds = layer_get_bounds(window_layers);
- text_layer = text_layer_create((GRect) { .origin = { 0, 0 }, .size = { bounds.size.w-0, 200 } });
+void addWindow(char* x, Window* w){
+  if(isCam == true || isVid == true || isSet == true){
+window_layers = window_get_root_layer(w);
+    GRect bounds = layer_get_frame(window_layers);
+ text_layer = text_layer_create(bounds);
  text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
 text_layer_set_text(text_layer, x);
   layer_add_child(window_layers, text_layer_get_layer(text_layer));
+  }else
+    if(isCam != true && isVid != true && isSet != true){
+window_layers = window_get_root_layer(w);
+    GRect bounds = layer_get_frame(window_layers);
+ text_layer = text_layer_create(bounds);
+ text_layer_set_overflow_mode(text_layer, GTextOverflowModeWordWrap);
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+text_layer_set_text(text_layer, x);
+  layer_add_child(window_layers, (Layer*)text_layer);
+  }
+ 
   
   
   
@@ -603,8 +737,7 @@ text_layer_set_text(text_layer, x);
   
 }
 
-
-static void regSync(){
+void regSync(){
    Tuplet initial_values[] = {
     TupletInteger(WEATHER_ICON_KEY, (uint8_t) 1)};
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
@@ -636,6 +769,8 @@ register int sgiz = 9;
 register int sgiiz = 10;
 register int sgiiiz = 11;
   register int sgiiiiz = 12;
+    register int wtf = 15;
+
 
 
 
@@ -651,189 +786,145 @@ register Tuplet symbol_tuzz = TupletInteger(SPY_KEY_START, sgiz);
 register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
   register Tuplet symbol_tuzze = TupletInteger(SPY_KEY_START, sgiiiz);
     register Tuplet sy = TupletInteger(SPY_KEY_START, sgiiiiz);
+      register Tuplet ci = TupletInteger(SPY_KEY_START, wtf);
 
 
 
 
 
+ if(isCam == true){
+   switch (cell_index->row){
+      case 0:
+      camera(symbol_tupez);
+    break;
+      case 1:
+      camera(symbol_tuplez);
+     break;
+     case 2:
+     camera(ci);
+       break;
+   }
+    }
+  
+  if(isVid == true){
+   switch (cell_index->row){
+      case 0:
+      vidCam(symbol_tup);
+    break;
+      case 1:
+    vidCam(symbol_tuple);
+   }
+    }
+   if(isSet == true){
+   switch (cell_index->row){
+      case 0:
+    break;
+      case 1:
+     break;
+   }
+    }
 
 
 
+  if(isCam == false && isVid == false && isSet == false){
   switch (cell_index->row) {
+    
+   
 
 case 0:
-
-      app_message_deregister_callbacks();
-    regSync();
-
-sendMes(symbol_tupez);
     
-    replace = "Loading Camera";
-   
-   addWindow("Loading Camera");
+    isCam = true;
+    
+    gobackCam = true;
+    
+    man = (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = menu_draw_row_callback,
+    .select_click = menu_select_callback,
+  };
+    changeWindow(windows, man);
+
+    //Front Camera, going to make this another menu soon//
+ //  camera(symbol_tupez);
     
 
 
 break;
 case 1:
+  isVid = true;
+        gobackCam = true;
 
-  app_message_deregister_callbacks();
-    regSync();
-
-sendMes(symbol_tuplez);
-        replace = "Loading Camera";
-
-addWindow("Loading Camera");
+    
+        man = (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = menu_draw_row_callback,
+    .select_click = menu_select_callback,
+  };
+    changeWindow(windows, man);
+    
+    //BackCamera//
+   // camera(symbol_tuplez);
+    
 break;
     case 2:
-  app_message_deregister_callbacks();
-
-    regSync();
-
-sendMes(symbol_tups);
-   
-replace = "Loading Audio";
-     
-addWindow("Loading Audio");
+ audRec(symbol_tups);
   
     
     
     
       break;
 case 3:
-      app_message_deregister_callbacks();
-
-        regSync();
-
-sendMes(symbol_tuples);
-        replace = "Loading Voice Rec";
-
-addWindow("Loading Voice Rec");
+     voice(symbol_tuples);
 
 
 
       break;
 case 4:
-      app_message_deregister_callbacks();
+    flashF(symbol_tupz);
 
-        regSync();
-
-  sendMes(symbol_tupz);
-    if(flash == false){
-    flash = true;
- addWindow(NULL);
-  }else
-    if(flash == true){
-layer_destroy(text_layer_get_layer(text_layer));
-      flash = false;
-   addWindow(NULL);
-
-  }
+  
       break;
 case 5:
-  app_message_deregister_callbacks();
-
-    regSync();
-
-  sendMes(symbol_tuple);
-     if(audi == false){
-      audi = true;
-           replace = "Loading Recorder";
-
-  addWindow("Loading Recorder");
-      
-    }else
-      if(audi == true){
-      layer_destroy(text_layer_get_layer(text_layer));
-
-      audi = false;
-   addWindow(NULL);
+ 
+    silence(symbol_tuppz);
     
     
-    }
+    
     
     
        break;
 	  
 	  case 6:
-  app_message_deregister_callbacks();
-
-    regSync();
-
-  sendMes(symbol_tup);
-     if(audi == false){
-      audi = true;
-           replace = "Loading Recorder";
-
-   addWindow("Loading Recorder");
-
-      
+  
+  if(detect == false){
+      motionD(symbol_tuz);
+     
+      detect = true;
     }else
-      if(audi == true){
-      layer_destroy(text_layer_get_layer(text_layer));
-
-      audi = false;
-      addWindow(NULL);
+      if(detect == true){
+      motionD(symbol_tuzze);
+     
     
-     }
+
+text_layer_destroy(text_layer);
+
+   window_stack_pop(true);
+      detect = false;
+
+    }
+     
     
       break;
     
     case 7:
-      app_message_deregister_callbacks();
 
-        regSync();
-
-     sendMes(symbol_tuppz);
-     if(audi == false){
-      audi = true;
-   addWindow(NULL);
-      
-    }else
-      if(audi == true){
-      
-
-      audi = false;
-       addWindow(NULL);
-
-     }
-    
-    break;
-
-    case 8:
-      app_message_deregister_callbacks();
-
-        regSync();
-
-    replace = "Detecting Motion";
-    if(detect == false){
-       sendMes(symbol_tuz);
-    
-    addWindow("Detecting Motion");
-      detect = true;
-    }else
-      if(detect == true){
-      sendMes(symbol_tuzze);
-            layer_destroy(text_layer_get_layer(text_layer));
-
-    }
-
-
-
-
- 
-  
-sendMes(symbol_tuzz);
-
-
-    break;
-    
-    case 9:
-
-
-    
-    
-   app_sync_deinit(&sync); 
+     app_sync_deinit(&sync); 
 
      app_message_register_inbox_received(in_received_handler);
    app_message_register_inbox_dropped(in_dropped_handler);
@@ -843,17 +934,45 @@ sendMes(symbol_tuzz);
     sendMes(sy);
 
   
-     // chunk_size = app_message_inbox_size_maximum() - dict_calc_buffer_size(1);
 
 
-addWindow("Loading Image");
+addWindow("Loading Image", window);
 
+    break;
+
+    case 8:
+    
+gobackCam = true;
+isSet = true;
+
+ man = (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = menu_draw_row_callback,
+    .select_click = menu_select_callback,
+  };
+    changeWindow(windows, man);
+
+ 
+  
+
+
+    break;
+    
+    case 9:
+
+
+    
+    
+  
 
 
     break;
     
   }
- 
+  }
 
 }
 
@@ -877,7 +996,7 @@ void window_load(Window *window) {
   // Now we prepare to initialize the menu layer
   // We need the bounds to specify the menu layer's viewport size
   // In this case, it'll be the same as the window's
-  Layer *window_layer = window_get_root_layer(window);
+   window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
 
@@ -903,18 +1022,6 @@ void window_load(Window *window) {
   
 }
 
-static void layer_update_callback(Layer *me, GContext* ctx) {
-  // We make sure the dimensions of the GRect to draw into
-  // are equal to the size of the bitmap--otherwise the image
-  // will automatically tile. Which might be what *you* want.
-
-  GRect bounds = image->bounds;
-
-  graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 0, 0 }, .size = bounds.size });
-
-  graphics_draw_bitmap_in_rect(ctx, image, (GRect) { .origin = { 144, 168 }, .size = bounds.size });
-}
-
  
 
 void createImg(uint8_t* i){
@@ -931,21 +1038,6 @@ void createImg(uint8_t* i){
   bitmap_layer_set_bitmap(image_layer, &bmpimage);
   layer_mark_dirty((Layer*)image_layer);
 
-  
-  
-  /* image_layer = bitmap_layer_create(GRect(0, 0, 144, 168));
-  bitmap_layer_set_bitmap(image_layer, bm);
-  layer_add_child(window_layer, bitmap_layer_get_layer(image_layer));
-  
-  
-  GRect bounds = layer_get_frame(window_layer);
-  layer = layer_create(bounds);
-  layer_set_update_proc(layer, layer_update_callback);
-  layer_add_child(window_layer, layer);
-
-  image = bm;
-
-  */
   
   
                                 APP_LOG(APP_LOG_LEVEL_DEBUG, "end of function");
@@ -974,12 +1066,21 @@ static int is = 0;
 
    start_tuple = dict_find(received, IMG_START);
       
-    char* p;
     Tuple *tuple = dict_find(received, SPY_KEY_START);
     Tuple *get_tuple = dict_find(received, SPY_KEY_STOP); 
     stop_tuple = dict_find(received, IMG_STOP);
     data_tuple = dict_find(received, IMG_DATA);
    Tuple *msg = dict_find(received, IMG_MSG);
+      Tuple *menu = dict_find(received, GET_MENU);
+
+   
+   
+   if(menu){
+       char *text = menu->value->cstring;
+     menus[z] = text;
+     z++;
+     layer_mark_dirty((Layer*)menu_layer);
+   }
    
    if(msg){
      displayText(msg->value->cstring);
@@ -1019,7 +1120,7 @@ GRect bounds = layer_get_bounds(window_layers);
             APP_LOG(APP_LOG_LEVEL_DEBUG, "data sent. index=%lu, length=%d", index, data_tuple->length);
 
        if (index + data_tuple->length <= length) {
-        memcpy(data + index, &data_tuple->value->data, data_tuple->length);        
+        memcpy(data + index, &data_tuple->value->data + 1, data_tuple->length - 1);        
         index += data_tuple->length;
                    createImg(data);
 
@@ -1081,8 +1182,53 @@ GRect bounds = layer_get_bounds(window_layers);
 
  }
 
+
+static void rowDeinit(){
+   for(int i = 0;i<10;i++){
+  if(menus[i] != NULL){
+    menus[i] = NULL;
+  free(menus[i]);
+}
+}
+
+}
+
+
+
+void window_appear(Window* w){
+   if(gobackCam == true){
+    isVid = false;
+    isCam = false;
+    isSet = false;
+    menu_layer_destroy(menu_layers);
+    layer_destroy(window_layers);
+      layer_mark_dirty(menu_layer_get_layer(menu_layer));
+
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, w);
+    gobackCam = false;
+  }
+}
+
+
 void window_unload(Window *window) {
-    register Tuplet sym = TupletInteger(SPY_KEY_START, 11);
+  
+ 
+  
+  if(isCam == false || isVid == false){
+    menu_layer_reload_data(menu_layer);
+      layer_mark_dirty((Layer*)menu_layer);
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+  
+}
+  
+  rowDeinit();
+     register Tuplet sym = TupletInteger(SPY_KEY_START, 11);
 
   // Destroy the menu layer
   if(data != NULL){
@@ -1101,27 +1247,33 @@ void window_unload(Window *window) {
     app_message_set_context(NULL);
   menu_layer_destroy(menu_layer);
 app_timer_cancel(timer);
+  listener = false;
   // Cleanup the menu icons
   
 }
 
 int main(void) {
 
-
-  
-  window = window_create();
-  app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
+ app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
   
   
        app_message_open(256, 256);
+  grabSettings();
+    rowInit();
+
+
+  
+  window = window_create();
+ 
 
     data = malloc(sizeof(uint8_t) * (5 * 4) * 168 + 12);
-    imgData =  malloc(sizeof(uint8_t) * (5 * 4) * 168 + 12);
 
 
   // Setup the window handlers
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
+    .appear = window_appear,
+
     .unload = window_unload,
   });
 

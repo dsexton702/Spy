@@ -1,42 +1,145 @@
-#include "window1.h"
-#include <pebble.h>
+#include "pebble.h"
+#include "APPMESSAGE.h"
 
-// BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
-static Window *s_window;
-static GBitmap *s_res_back;
-static BitmapLayer *s_bitmaplayer_1;
 
-static void initialise_ui(void) {
-  s_window = window_create();
-  window_set_fullscreen(s_window, true);
+
+void camera(Tuplet tup){
   
-  s_res_back = gbitmap_create_with_resource(RESOURCE_ID_back);
-  // s_bitmaplayer_1
-  s_bitmaplayer_1 = bitmap_layer_create(GRect(0, 0, 144, 168));
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_back);
-  bitmap_layer_set_background_color(s_bitmaplayer_1, GColorWhite);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+ 
+
+  
+  regSync();
+
+sendMes(tup);
+    
+    replace = "Loading Camera";
+   
+   addWindow("Loading Camera", y);
+  
+   
+
+  
 }
 
-static void destroy_ui(void) {
-  window_destroy(s_window);
-  bitmap_layer_destroy(s_bitmaplayer_1);
-  gbitmap_destroy(s_res_back);
-}
-// END AUTO-GENERATED UI CODE
+void vidCam(Tuplet tup){
+  app_message_deregister_callbacks();
 
-static void handle_window_unload(Window* window) {
-  destroy_ui();
-}
+    regSync();
 
-void show_window1(void) {
-  initialise_ui();
-  window_set_window_handlers(s_window, (WindowHandlers) {
-    .unload = handle_window_unload,
-  });
-  window_stack_push(s_window, true);
+  sendMes(tup);
+    
+           replace = "Loading Recorder";
+
+  addWindow("Loading Recorder", y);
 }
 
-void hide_window1(void) {
-  window_stack_remove(s_window, true);
+void audRec(Tuplet tup){
+  
+   app_message_deregister_callbacks();
+
+    regSync();
+
+sendMes(tup);
+   
+replace = "Loading Audio";
+     
+addWindow("Loading Audio", window);
+  
 }
+
+void voice(Tuplet tup){
+  listener = true;
+   app_message_deregister_callbacks();
+
+        regSync();
+
+sendMes(tup);
+        replace = "Loading Voice Rec";
+
+addWindow("Loading Voice Rec", window);
+}
+
+void motionD(Tuplet tup){
+  
+  
+  
+  
+  
+  
+    app_message_deregister_callbacks();
+
+        regSync();
+
+    replace = "Detecting Motion";
+   
+    addWindow("Detecting Motion", window);
+     
+      sendMes(tup);
+
+    
+
+}
+
+void flashF(Tuplet tup){
+   app_message_deregister_callbacks();
+
+        regSync();
+
+  sendMes(tup);
+  replace = "Starting Flashlight";
+  addWindow(replace, window);
+
+}
+
+void silence(Tuplet tup){
+    app_message_deregister_callbacks();
+
+        regSync();
+
+     sendMes(tup);
+   addWindow(NULL, window);
+      
+  
+}
+
+
+
+
+void window_sets(Window *x, MenuLayerCallbacks men) {
+window_layers = window_get_root_layer(x);
+  GRect bounds = layer_get_frame(window_layers);
+
+    
+
+  // Create the menu layer
+  menu_layers = menu_layer_create(bounds);
+
+ 
+  // Set all the callbacks for the menu layer
+  menu_layer_set_callbacks(menu_layers, NULL, men);
+
+  // Bind the menu layer's click config provider to the window for interactivity
+  menu_layer_set_click_config_onto_window(menu_layers, x);
+
+  // Add it to the window for display
+  layer_add_child(window_layers, menu_layer_get_layer(menu_layers));
+
+}
+
+void changeWindow(Window *z, MenuLayerCallbacks man){
+z = window_create();
+
+
+window_sets(z, man);
+
+
+y = z;
+
+
+  window_stack_push(z, true /* Animated */);
+
+}
+
+
+
+
