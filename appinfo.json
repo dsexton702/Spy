@@ -56,7 +56,7 @@
     "shortName": "Spy",
     "uuid": "313c456e-0005-4b84-be4e-c6f563fcd8d8",
     "versionCode": 15,
-    "versionLabel": "3.7",
+    "versionLabel": "3.8",
     "watchapp": {
         "watchface": false
     }

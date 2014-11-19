@@ -34,6 +34,8 @@ bool isVid;
 bool isSet;
 bool listener;
 bool detector;
+bool yesno;
+bool vibrate;
 
 
 
@@ -87,6 +89,10 @@ void vidCam(Tuplet tup);
 void audRec(Tuplet tup);
 
 void voice(Tuplet tup);
+
+void saveB(bool x);
+
+bool readB();
 
 void motionD(Tuplet tup);
 

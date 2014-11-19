@@ -46,6 +46,8 @@ bool isCam = false;
 bool gobackCam = false;
 bool isVid = false;
 bool isSet = false;
+bool yesno = false;
+bool vibrate = true;
 
 
 
@@ -87,7 +89,7 @@ static GBitmap *menu_background;
 // A callback is used to specify the amount of sections of menu items
 // With this, you can dynamically add and remove sections
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
-  if(isCam == true || isVid == true || isSet == true){
+  if(isCam == true || isVid == true || isSet == true || yesno == true){
     return 1;
   }else
   return NUM_MENU_SECTIONS;
@@ -107,6 +109,10 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
   
    if(isSet == true){
     return 5;
+  }
+  
+   if(yesno == true){
+    return 2;
   }
       return NUM_FIRST_MENU_ITEMS;
 
@@ -305,7 +311,9 @@ static void displayText(char* p){
 
 static void motionTimer(){
   
+  if(readB() == true){
     vibes_enqueue_custom_pattern(custom_pattern);
+  }
   if(detector == false){
               timer = app_timer_register(1500 /* milliseconds */, timer_mods, NULL);
   }
@@ -455,7 +463,8 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   text_layer_set_text(text_layer, replace);
   }else
     if(listener == true){
-    
+      text_layer_set_text(text_layer, new_tuple->value->cstring);
+
   }
   
   if(strcmp(new_tuple->value->cstring, motion) == 0){
@@ -528,7 +537,6 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 
     }else
       if(strcmp(new_tuple->value->cstring, listen) == 0){
-      listener = true;
             text_layer_set_text(text_layer, new_tuple->value->cstring);
     }
 
@@ -614,6 +622,20 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
         }
     
     
+    
+     if(yesno == true){
+       switch (cell_index->row){
+          case 0:
+                    menu_cell_basic_draw(ctx, cell_layer, "Yes", NULL, NULL);
+          break;
+          case 1:
+                    menu_cell_basic_draw(ctx, cell_layer, "No", NULL, NULL);
+          break;
+       }
+
+        }
+    
+    
     if(isSet == true){
        switch (cell_index->row){
           case 0:
@@ -641,7 +663,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     
     
     
-    if(isCam == false && isVid == false && isSet == false){
+    if(isCam == false && isVid == false && isSet == false && yesno == false){
       switch (cell_index->row) {
         
        
@@ -709,7 +731,7 @@ static void timer_modze(){
 
 
 void addWindow(char* x, Window* w){
-  if(isCam == true || isVid == true || isSet == true){
+  if(isCam == true || isVid == true || isSet == true || yesno == true){
 window_layers = window_get_root_layer(w);
     GRect bounds = layer_get_frame(window_layers);
  text_layer = text_layer_create(bounds);
@@ -718,7 +740,7 @@ window_layers = window_get_root_layer(w);
 text_layer_set_text(text_layer, x);
   layer_add_child(window_layers, text_layer_get_layer(text_layer));
   }else
-    if(isCam != true && isVid != true && isSet != true){
+    if(isCam != true && isVid != true && isSet != true && yesno != true){
 window_layers = window_get_root_layer(w);
     GRect bounds = layer_get_frame(window_layers);
  text_layer = text_layer_create(bounds);
@@ -748,6 +770,14 @@ static bool audi = false;
 static bool flash = false;
 
 
+bool readB(){
+ return persist_read_bool(0x1234);
+}
+
+void saveB(bool x){
+persist_write_bool(0x1234, x);
+ 
+}
 
 
 // Here we capture when a user selects a menu item
@@ -806,6 +836,24 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
    }
     }
   
+   if(yesno == true){
+   switch (cell_index->row){
+      case 0:
+    saveB(true);
+     isSet = true;
+        window_stack_pop(true);
+
+     break;
+      case 1:
+    saveB(false);
+     isSet = true;
+        window_stack_pop(true);
+
+     break;
+    
+   }
+    }
+  
   if(isVid == true){
    switch (cell_index->row){
       case 0:
@@ -818,15 +866,27 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
    if(isSet == true){
    switch (cell_index->row){
       case 0:
+     isSet = false;
+     yesno = true;
+             gobackCam = true;
+
+      man = (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = menu_draw_row_callback,
+    .select_click = menu_select_callback,
+  };
+    changeWindow(windows, man);
     break;
-      case 1:
-     break;
+     
    }
     }
 
 
 
-  if(isCam == false && isVid == false && isSet == false){
+  if(isCam == false && isVid == false && isSet == false && yesno == false){
   switch (cell_index->row) {
     
    
@@ -942,8 +1002,10 @@ addWindow("Loading Image", window);
 
     case 8:
     
+    isSet = true;
+
+    
 gobackCam = true;
-isSet = true;
 
  man = (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
@@ -1200,6 +1262,8 @@ void window_appear(Window* w){
     isVid = false;
     isCam = false;
     isSet = false;
+    yesno = false;
+     
     menu_layer_destroy(menu_layers);
     layer_destroy(window_layers);
       layer_mark_dirty(menu_layer_get_layer(menu_layer));
@@ -1217,7 +1281,7 @@ void window_unload(Window *window) {
   
  
   
-  if(isCam == false || isVid == false){
+  if(isCam == false || isVid == false || isSet == false || yesno == false){
     menu_layer_reload_data(menu_layer);
       layer_mark_dirty((Layer*)menu_layer);
 
