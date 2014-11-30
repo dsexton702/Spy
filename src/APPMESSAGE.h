@@ -90,7 +90,7 @@ void audRec(Tuplet tup);
 
 void voice(Tuplet tup);
 
-void saveB(bool x);
+void saveB(uint8_t y, bool x);
 
 bool readB();
 

@@ -48,6 +48,8 @@ bool isVid = false;
 bool isSet = false;
 bool yesno = false;
 bool vibrate = true;
+bool motionPic = false;
+bool secondLayer = false;
 
 
 
@@ -122,6 +124,18 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
 }
 
 
+void goingBack(){
+    window_stack_pop(true);
+
+
+  layer_mark_dirty((Layer*)menu_layer);
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+
+}
+
 
 
 void sendMes(Tuplet tup){
@@ -138,6 +152,9 @@ app_message_outbox_begin(&iter);
 
 static void actionTimer(){
 }
+
+
+/* USED TO GO BACK AFTER TAKING PICTURE AND TURN ON OR OFF VIRBATION ON SUCCESS*/
 
 
 static void timer_mods(){
@@ -636,6 +653,19 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
         }
     
     
+      if(motionPic == true){
+       switch (cell_index->row){
+          case 0:
+                    menu_cell_basic_draw(ctx, cell_layer, "Yes", NULL, NULL);
+          break;
+          case 1:
+                    menu_cell_basic_draw(ctx, cell_layer, "No", NULL, NULL);
+          break;
+       }
+
+        }
+    
+    
     if(isSet == true){
        switch (cell_index->row){
           case 0:
@@ -663,7 +693,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     
     
     
-    if(isCam == false && isVid == false && isSet == false && yesno == false){
+    if(isCam == false && isVid == false && isSet == false && yesno == false && motionPic == false){
       switch (cell_index->row) {
         
        
@@ -774,8 +804,8 @@ bool readB(){
  return persist_read_bool(0x1234);
 }
 
-void saveB(bool x){
-persist_write_bool(0x1234, x);
+void saveB(uint8_t y, bool x){
+persist_write_bool(y, x);
  
 }
 
@@ -800,6 +830,10 @@ register int sgiiz = 10;
 register int sgiiiz = 11;
   register int sgiiiiz = 12;
     register int wtf = 15;
+      register int motpic = 16;
+        register int motpics = 17;
+
+
 
 
 
@@ -817,10 +851,51 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
   register Tuplet symbol_tuzze = TupletInteger(SPY_KEY_START, sgiiiz);
     register Tuplet sy = TupletInteger(SPY_KEY_START, sgiiiiz);
       register Tuplet ci = TupletInteger(SPY_KEY_START, wtf);
+        register Tuplet picmot = TupletInteger(SPY_KEY_START, motpic);
+          register Tuplet picmots = TupletInteger(SPY_KEY_START, motpics);
 
 
 
 
+
+if(motionPic == true){
+   switch (cell_index->row){
+      case 0:
+  saveB(12, true);
+       sendMes(picmot);
+          motionPic = false;
+
+     isSet = true;
+          secondLayer = true;
+
+        window_stack_pop(true);
+     
+     menu_layer_reload_data(menu_layer);
+      layer_mark_dirty((Layer*)menu_layer);
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+break;
+  
+      case 1:
+       saveB(12, false);
+
+       sendMes(picmots);
+     motionPic = false;
+     isSet = true;
+     secondLayer = true;
+             window_stack_pop(true);
+     
+      layer_mark_dirty((Layer*)menu_layer);
+
+
+  
+menu_layer_set_click_config_onto_window(menu_layer, window);
+
+     break;
+}
+}
 
  if(isCam == true){
    switch (cell_index->row){
@@ -839,13 +914,13 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
    if(yesno == true){
    switch (cell_index->row){
       case 0:
-    saveB(true);
+    saveB(13,true);
      isSet = true;
         window_stack_pop(true);
 
      break;
       case 1:
-    saveB(false);
+    saveB(13,false);
      isSet = true;
         window_stack_pop(true);
 
@@ -880,13 +955,31 @@ register Tuplet symbol_tuz = TupletInteger(SPY_KEY_START, sgiiz);
   };
     changeWindow(windows, man);
     break;
+     case 1:
+     
+     break;
+     case 2:
+     isSet = false;
+     motionPic = true;
+      gobackCam = true;
+
+      man = (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = menu_draw_row_callback,
+    .select_click = menu_select_callback,
+  };
+    changeWindow(windows, man);
+     break;
      
    }
     }
 
 
 
-  if(isCam == false && isVid == false && isSet == false && yesno == false){
+  if(isCam == false && isVid == false && isSet == false && yesno == false && motionPic == false){
   switch (cell_index->row) {
     
    
@@ -1015,6 +1108,9 @@ gobackCam = true;
     .draw_row = menu_draw_row_callback,
     .select_click = menu_select_callback,
   };
+    
+    
+    
     changeWindow(windows, man);
 
  
@@ -1261,11 +1357,17 @@ void window_appear(Window* w){
    if(gobackCam == true){
     isVid = false;
     isCam = false;
+     if(secondLayer == true){
+       isSet = true;
+     }else
+       if(secondLayer == false){
     isSet = false;
+     }
     yesno = false;
-     
-    menu_layer_destroy(menu_layers);
-    layer_destroy(window_layers);
+     motionPic = false;
+     }
+  //  menu_layer_destroy(menu_layers);
+  //  layer_destroy(window_layers);
       layer_mark_dirty(menu_layer_get_layer(menu_layer));
 
 
@@ -1274,23 +1376,23 @@ void window_appear(Window* w){
 menu_layer_set_click_config_onto_window(menu_layer, w);
     gobackCam = false;
   }
-}
+
 
 
 void window_unload(Window *window) {
   
  
   
-  if(isCam == false || isVid == false || isSet == false || yesno == false){
-    menu_layer_reload_data(menu_layer);
-      layer_mark_dirty((Layer*)menu_layer);
+  if(isCam == false || isVid == false || isSet == false || yesno == false || motionPic == false) {
+    menu_layer_reload_data(menu_layers);
+      layer_mark_dirty((Layer*)menu_layers);
 
 
   
-menu_layer_set_click_config_onto_window(menu_layer, window);
+menu_layer_set_click_config_onto_window(menu_layers, window);
   
 }
-  
+
   rowDeinit();
      register Tuplet sym = TupletInteger(SPY_KEY_START, 11);
 
